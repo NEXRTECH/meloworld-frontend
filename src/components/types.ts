@@ -1,11 +1,3 @@
-export type Assessment = {
-  created_at: string;
-  description: string;
-  id: number;
-  title: string;
-  updated_at: string;
-};
-
 export type Organization = {
   organization_id: number;
   organization_name: string;
@@ -17,6 +9,15 @@ export type Organization = {
   updated_at: string;
   metadata?: Record<string, any> | null;
 };
+
+export type Course = {
+  id: number;
+  title: string;
+  description: string;
+  image: string;
+  created_at: string;
+  updated_at: string;
+}
 
 export type Chapter = {
   id: number;
@@ -39,6 +40,7 @@ export type Question = {
 
 export type Quiz = {
   id: number;
+  couse_id: number;
   chapter_id: number;
   title: string;
   description: string;

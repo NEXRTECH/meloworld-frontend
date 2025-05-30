@@ -7,30 +7,13 @@ import Button from "@/components/ui/button/button";
 import Card from "@/components/ui/card/card";
 import Input from "@/components/ui/input/input";
 import Table from "@/components/ui/table/table";
-import { getAllAssessments } from "@/services/assessments";
 import React, { useEffect, useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { FaFilter, FaSort } from "react-icons/fa6";
 
 const AssessmentsHome: React.FC = () => {
   const token = useAuthStore((state) => state.token);
-  const [assessments, setAssessments] = useState<Assessment[]>([]);
 
-  useEffect(() => {
-    const fetchAssessments = async () => {
-      if (token) {
-        const response = await getAllAssessments(token);
-        if (response.ok) {
-          const data = await response.json();
-          setAssessments(data["courses"]);
-        }
-      }
-    };
-
-    fetchAssessments();
-
-    return () => {};
-  }, []);
   return (
     <div className="dashboard-panel">
       <h1>Assessments</h1>

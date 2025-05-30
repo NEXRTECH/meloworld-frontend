@@ -6,9 +6,11 @@ import { IoClose } from "react-icons/io5";
 import { AnimatePresence, motion } from "framer-motion";
 import logo from "@/assets/logo-transparent.png";
 import { useAuthStore } from "../stores/auth-store";
+import { useCandidateStore } from "../stores/candidate-store";
 
 const Navbar: React.FC = () => {
   const { userRole, token, clearAuth } = useAuthStore();
+  const { clearCandidateStore } = useCandidateStore();
   const [navbarItems, setNavbarItems] = useState<
     {
       name: string;
@@ -30,7 +32,13 @@ const Navbar: React.FC = () => {
         if (token) {
           setNavbarItems([
             { name: "Home", link: "/candidate" },
-            { name: "Logout", onClick: clearAuth },
+            {
+              name: "Logout",
+              onClick: () => {
+                clearCandidateStore();
+                clearAuth();
+              },
+            },
           ]);
         }
         break;
@@ -60,18 +68,18 @@ const Navbar: React.FC = () => {
       {!hidden && (
         <div className="fixed top-0 w-full z-50">
           {/* Desktop navbar (shown only in lg and md screens) */}
-            <div className="h-full lg:flex hidden py-3 px-10 bg-secondary shadow-lg justify-end items-center gap-5">
-              {navbarItems.map((item, idx) => (
-                <a
-                  onClick={item.onClick}
-                  className="font-semibold hover:bg-sky-900 hover:text-secondary px-2 py-1 rounded-md transition duration-200  hover:shadow-md"
-                  href={item.link}
-                  key={idx}
-                >
-                  {item.name}
-                </a>
-              ))}
-            </div>
+          <div className="h-full lg:flex hidden py-3 px-10 bg-sky-900 shadow-lg justify-end items-center gap-5">
+            {navbarItems.map((item, idx) => (
+              <a
+                onClick={item.onClick}
+                className="font-semibold hover:bg-secondary text-white hover:text-sky-900 px-2 py-1 rounded-md transition duration-200  hover:shadow-md"
+                href={item.link}
+                key={idx}
+              >
+                {item.name}
+              </a>
+            ))}
+          </div>
 
           {/* Mobile Button (hidden in lg and md) */}
           <div className="lg:hidden md:hidden">

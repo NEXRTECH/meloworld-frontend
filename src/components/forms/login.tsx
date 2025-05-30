@@ -144,6 +144,15 @@ const LoginForm: React.FC<LoginProps> = ({ userRole }) => {
               position: "top-right",
             });
             router.push("/candidate");
+          } else {
+            toast({
+              title: "Login failed",
+              description: "Invalid email or password",
+              variant: "error",
+              position: "top-right",
+            });
+            setLoading(false);
+            return;
           }
           break;
 
@@ -169,6 +178,25 @@ const LoginForm: React.FC<LoginProps> = ({ userRole }) => {
               position: "top-right",
             });
             router.push("/candidate");
+          } else {
+            // do a check for 4xx error and give an error toast
+            if (response && response.status >= 400 && response.status < 500) {
+              toast({
+                title: "Login failed",
+                description: "Invalid email or password",
+                variant: "error",
+                position: "top-right",
+              });
+            } else {
+              toast({
+                title: "Login failed",
+                description: "Something went wrong. Please try again later.",
+                variant: "error",
+                position: "top-right",
+              });
+            }
+            setLoading(false);
+            return;
           }
           break;
 
