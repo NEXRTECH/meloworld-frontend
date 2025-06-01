@@ -20,12 +20,45 @@ export const getAllQuizzesByChapter = async (
   return response;
 };
 
+export const getAllQuizzesByCourse = async (
+  token: string,
+  courseId: number
+) => {
+  const url = `https://${QUIZ_HOST}/default/psychometricQuiz/?action=getAllQuizByCourseId`;
+  const options = {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ course_id: courseId }),
+  };
+  const response = await retryFetch(url, options);
+  return response;
+};
+
+export const getAllQuestionsByQuizId = async (
+  token: string,
+  quizId: number
+) => {
+  const url = `https://${QUIZ_HOST}/default/psychometricQuiz/?action=listQuestions`;
+  const options = {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ quiz_id: quizId }),
+  };
+  const response = await retryFetch(url, options);
+  return response;
+};
+
 export const getQuizByChapter = async (
   token: string,
   chapterId: number,
   quizId: number,
 ) => {
-  console.log("pingu")
   const url = `https://${QUIZ_HOST}/default/psychometricQuiz/quiz?action=getQuiz`;
   const options = {
     method: "POST",

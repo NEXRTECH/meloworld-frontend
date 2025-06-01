@@ -18,6 +18,7 @@ import {
 import Input from "@/components/ui/input/input";
 import Select from "@/components/ui/select/select";
 import Table from "@/components/ui/table/table";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import {
@@ -30,56 +31,6 @@ import {
 } from "react-icons/bs";
 import { FaPlus } from "react-icons/fa6";
 
-const sessionData = [
-  {
-    session_id: 1,
-    patient_id: 2,
-    therapist_id: 1,
-    content_id: null,
-    session_status: "Completed",
-    start_time: "2025-03-26T10:00:00.000Z",
-    end_time: "2025-03-26T11:30:00.000Z",
-    created_at: "2025-05-05T19:55:58.015Z",
-    updated_at: "2025-05-05T19:56:25.494Z",
-    metadata: {
-      completion_feedback: "Patient responded well to therapy.",
-    },
-    patient_user_id: 1,
-    therapist_user_id: null,
-  },
-  {
-    session_id: 2,
-    patient_id: 1,
-    therapist_id: 1,
-    content_id: 101,
-    session_status: "Upcoming",
-    start_time: "2025-04-26T10:00:00.000Z",
-    end_time: "2025-04-26T11:30:00.000Z",
-    created_at: "2025-02-01T10:00:00.000Z",
-    updated_at: "2025-02-01T10:00:00.000Z",
-    metadata: {
-      completion_feedback: "N/A",
-    },
-    patient_user_id: 2,
-    therapist_user_id: 1,
-  },
-  {
-    session_id: 3,
-    patient_id: 3,
-    therapist_id: 1,
-    content_id: 102,
-    session_status: "Completed",
-    start_time: "2025-01-26T10:00:00.000Z",
-    end_time: "2025-01-26T11:30:00.000Z",
-    created_at: "2024-12-05T19:55:58.015Z",
-    updated_at: "2024-12-05T19:56:25.494Z",
-    metadata: {
-      completion_feedback: "Patient reported improvement.",
-    },
-    patient_user_id: 3,
-    therapist_user_id: 1,
-  },
-];
 
 const patientData = [
   {
@@ -155,7 +106,7 @@ const SessionsPage: React.FC = () => {
   const router = useRouter();
   const { fetchSessionsByTherapistId, createSession, updateSession } =
     useTherapistStore((s) => s);
-  const sessions = useTherapistStore(s => s.sessions);
+  const sessions = useTherapistStore((s) => s.sessions);
   const { metadata } = useAuthStore((s) => s);
   if (!metadata) {
     return <div>Loading...</div>;
@@ -204,9 +155,11 @@ const SessionsPage: React.FC = () => {
       });
   };
 
-
   return (
     <div className="dashboard-panel relative">
+      <div style={{ textAlign: "center", marginTop: 20 }}>
+        <h1>My WebGL in Next.js</h1>
+      </div>
       <div className="w-full flex justify-between">
         <h1>Your Sessions</h1>
         <Dialog>
@@ -273,7 +226,6 @@ const SessionsPage: React.FC = () => {
                 <tr
                   key={session.session_id}
                   className="hover:bg-gray-100 cursor-pointer"
-                  
                 >
                   <td className="text-sm">{session.session_id}</td>
                   <td className="text-sm">
@@ -287,7 +239,9 @@ const SessionsPage: React.FC = () => {
                       size="xs"
                       variant="outline"
                       onClick={() => {
-                        router.push(`/therapist/sessions/${session.session_id}`);
+                        router.push(
+                          `/therapist/sessions/${session.session_id}`
+                        );
                       }}
                     >
                       View

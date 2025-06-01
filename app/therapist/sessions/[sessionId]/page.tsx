@@ -24,7 +24,9 @@ import {
 } from "@/components/ui/dialog/dialog";
 import Input from "@/components/ui/input/input";
 import TextArea from "@/components/ui/textarea/textarea";
+import dynamic from "next/dynamic";
 const SessionPage = () => {
+
   const router = useRouter();
   const { sessionId } = useParams();
   const { startSession, cancelSession, getSession, updateSession, endSession } =
@@ -174,6 +176,7 @@ const SessionPage = () => {
 
   return (
     <div className="dashboard-panel">
+     
       <Button
         onClick={() => router.push("/therapist/sessions")}
         variant="outline"
@@ -219,9 +222,8 @@ const SessionPage = () => {
           <Button
             disabled={
               session.session_status === "Cancelled" ||
-              session.session_status === "In Progress" || 
+              session.session_status === "In Progress" ||
               session.session_status === "Completed"
-
             }
             onClick={handleStartSession}
             size="xs"
@@ -229,9 +231,11 @@ const SessionPage = () => {
           >
             Start Session
           </Button>
-          {session.session_status === "Scheduled" && <Button onClick={handleCancelSession} size="xs" variant="outline">
-            Cancel
-          </Button>}
+          {session.session_status === "Scheduled" && (
+            <Button onClick={handleCancelSession} size="xs" variant="outline">
+              Cancel
+            </Button>
+          )}
           {session.session_status === "In Progress" && (
             <Dialog>
               <DialogTrigger asChild>
@@ -244,7 +248,10 @@ const SessionPage = () => {
                   <DialogTitle>Create new session</DialogTitle>
                   <DialogDescription>
                     <div className="flex flex-col gap-2 w-full h-full">
-                      <label htmlFor="feedback" className="text-base font-semibold">
+                      <label
+                        htmlFor="feedback"
+                        className="text-base font-semibold"
+                      >
                         Session Feedback
                       </label>
                       <TextArea
@@ -272,7 +279,8 @@ const SessionPage = () => {
           )}
         </div>
 
-        {(session.session_status === "In Progress" || session.session_status === "Completed") && (
+        {(session.session_status === "In Progress" ||
+          session.session_status === "Completed") && (
           <div>
             <h2 className="mt-5">Waiting Queue</h2>
             {session.metadata &&

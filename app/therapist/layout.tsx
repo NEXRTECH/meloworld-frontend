@@ -2,9 +2,10 @@ import ProtectedRoute from "@/components/protected-route";
 import React, { ReactNode } from "react";
 import DashboardSidebar from "src/components/ui/sidebar";
 import { GoHomeFill } from "react-icons/go";
-import { PiBuildingApartmentFill } from "react-icons/pi";
+import { PiBuildingApartmentFill, PiVirtualReality } from "react-icons/pi";
 import { IoPeople, IoPerson } from "react-icons/io5";
 import { FaCalendar, FaWpforms } from "react-icons/fa6";
+import { BsHeadsetVr, BsVr } from "react-icons/bs";
 
 interface TherapistLayoutProps {
   children: ReactNode;
@@ -21,6 +22,11 @@ export default function OrgLayout({ children }: TherapistLayoutProps) {
           title: "Sessions",
           to: "/therapist/sessions",
           icon: <FaCalendar />,
+        },
+        {
+          title: "VR",
+          to: "/therapist/vr",
+          icon: <BsHeadsetVr />,
         },
         {
           title: "Patients",

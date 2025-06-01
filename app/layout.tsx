@@ -2,6 +2,7 @@
 import '../styles/globals.css';      // your global styles
 import Navbar from '@/components/ui/navbar';
 import { ToastProvider } from '@/components/hooks/use-toast';
+import Footer from '@/components/ui/footer';
 
 export const metadata = {
   title: 'Meloworld',
@@ -22,6 +23,7 @@ export default function RootLayout({
           <Navbar />
           <main>{children}</main>
         </ToastProvider>
+        <Footer/>
       </body>
     </html>
   );

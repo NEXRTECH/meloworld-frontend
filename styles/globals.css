@@ -12,6 +12,10 @@ body {
     @apply bg-white font-poppins text-sky-900 font-light;
 }
 
+p {
+    @apply text-sm;
+}
+
 h1 {
     @apply text-xl lg:text-2xl font-poppins font-bold;
 }

@@ -9,7 +9,7 @@
 }
 
 body {
-    @apply bg-white font-poppins text-sky-900 font-light;
+    @apply bg-white font-poppins text-sky-900 font-thin;
 }
 
 h1 {

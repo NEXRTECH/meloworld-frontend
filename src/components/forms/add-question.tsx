@@ -38,7 +38,7 @@ const AddQuestionForm: React.FC<AddQuestionFormProps> = ({
 
   const updateFormField = <K extends keyof FormState>(
     key: K,
-    value: string | string[]
+    value: FormState[K]["value"]
   ) => {
     setFormState((prev) => ({
       ...prev,
@@ -121,7 +121,7 @@ const AddQuestionForm: React.FC<AddQuestionFormProps> = ({
           required
           inputSize="sm"
           placeholder="Add your question here"
-          onChange={(e) => updateFormField("question", e.target.value)}
+          onChange={(e) => updateFormField("question", Number(e.target.value))}
         />
       </Fieldset>
 

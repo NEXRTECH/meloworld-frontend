@@ -4,7 +4,7 @@ import { FaArrowRight } from "react-icons/fa";
 // import { useNavigate } from "react-router-dom";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/components/stores/auth-store";
-import { Assessment } from "@/components/types";
+import { Course } from "@/components/types";
 import { getAllAssessments } from "@/services/assessments";
 import Card from "@/components/ui/card/card";
 import Button from "@/components/ui/button/button";
@@ -14,7 +14,7 @@ const AssessmentTable: React.FC = () => {
   const token = useAuthStore((state) => state.token);
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [assessments, setAssessments] = useState<Course[]>([]);
 
   useEffect(() => {
     const fetchAssessments = async () => {

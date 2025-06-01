@@ -1,36 +1,24 @@
 "use client";
 
 import AssessmentDropdownRow from "@/components/panels/admin/assessments/assessment-dropdown-row";
+import { useAdminStore } from "@/components/stores/admin-store";
 import { useAuthStore } from "@/components/stores/auth-store";
-import { Assessment } from "@/components/types";
 import Button from "@/components/ui/button/button";
 import Card from "@/components/ui/card/card";
 import Input from "@/components/ui/input/input";
 import Table from "@/components/ui/table/table";
-import { getAllAssessments } from "@/services/assessments";
 import React, { useEffect, useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { FaFilter, FaSort } from "react-icons/fa6";
 
 const AssessmentsHome: React.FC = () => {
   const token = useAuthStore((state) => state.token);
-  const [assessments, setAssessments] = useState<Assessment[]>([]);
-
+  const assessments = useAdminStore((s) => s.assessments);
+  const { getAssessments } = useAdminStore();
   useEffect(() => {
-    const fetchAssessments = async () => {
-      if (token) {
-        const response = await getAllAssessments(token);
-        if (response.ok) {
-          const data = await response.json();
-          setAssessments(data["courses"]);
-        }
-      }
-    };
-
-    fetchAssessments();
-
-    return () => {};
+    if (token) getAssessments(token);
   }, []);
+
   return (
     <div className="dashboard-panel">
       <h1>Assessments</h1>

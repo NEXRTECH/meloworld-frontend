@@ -178,8 +178,7 @@ export const useTherapistStore = create<TherapistStoreState>()(
         },
       }),
       {
-        name: "admin-store", // key to store in storage (must be unique)
-        // Optionally add storage and other persist options here
+        name: "therapist-store",
       }
     )
   )

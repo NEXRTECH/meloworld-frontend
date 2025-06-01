@@ -2,7 +2,7 @@
 
 import { useAdminStore } from "@/components/stores/admin-store";
 import { useAuthStore } from "@/components/stores/auth-store";
-import { Assessment } from "@/components/types";
+import { Course } from "@/components/types";
 import Card from "@/components/ui/card/card";
 import MultiSelect from "@/components/ui/multiselect/multiselect";
 import Table from "@/components/ui/table/table";
@@ -18,7 +18,7 @@ import React, { useEffect, useState } from "react";
 
 const OrganizationPanel = () => {
   const token = useAuthStore((s) => s.token);
-  const [scales, setScales] = useState<Assessment[]>();
+  const [scales, setScales] = useState<Course[]>();
   const [selectedScales, setSelectedScales] = useState<
     Record<number, string[]>
   >({});

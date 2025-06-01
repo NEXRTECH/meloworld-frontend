@@ -71,10 +71,10 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   // Tailwind classes per variant
   const variantStyles: Record<ToastVariant, string> = {
-    info: 'bg-white dark:bg-gray-800',
-    success: 'bg-green-100 dark:bg-green-800',
-    error: 'bg-red-100 dark:bg-red-800',
-    warning: 'bg-yellow-100 dark:bg-yellow-800',
+    info: 'bg-white',
+    success: 'bg-green-700',
+    error: 'bg-red-700',
+    warning: 'bg-yellow-700',
   };
 
   // Icon per variant
@@ -110,25 +110,25 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) =
               className={`
                 ${variantStyles[variant!]}
                 shadow-lg rounded-lg p-4
-                grid grid-cols-[auto,1fr] gap-3 items-start
+                grid grid-cols-[auto,1fr] gap-3 items-start text-white
               `}
             >
-              <Icon className="w-5 h-5 mt-1 text-white" />
+              <Icon className="w-5 h-5 mt-1" />
 
               <div className="space-y-1">
-                <RadixToast.Title className="font-semibold text-gray-900 dark:text-gray-100">
+                <RadixToast.Title className="font-semibold dark:text-gray-100">
                   {title}
                 </RadixToast.Title>
 
                 {description && (
-                  <RadixToast.Description className="text-gray-700 dark:text-gray-300 text-sm">
+                  <RadixToast.Description className="dark:text-gray-300 text-sm">
                     {description}
                   </RadixToast.Description>
                 )}
 
                 {action && (
                   <RadixToast.Action asChild altText={action.label}>
-                    <button onClick={action.onClick} className="text-blue-600 font-medium">
+                    <button onClick={action.onClick} className=" font-medium">
                       {action.label}
                     </button>
                   </RadixToast.Action>

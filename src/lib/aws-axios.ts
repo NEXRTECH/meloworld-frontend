@@ -36,19 +36,21 @@ export async function signAndRequest(
     try {
       response = await client.fetch(url, options);
 
-      // If we got a 2xx, we're done
       if (response.ok) {
         break;
       }
 
-      // Otherwise, non-2xx: if it's the last attempt, we'll exit loop and handle below,
-      // else we retry.
-      if (attempt < maxRetries) {
-        console.warn(
-          `Request to ${url} returned ${response.status}. Retrying ${attempt}/${maxRetries}...`
-        );
-        continue;
+      // Only retry if it's a 5xx error.
+      if (response.status >= 500 && response.status < 600) {
+        if (attempt < maxRetries) {
+          console.warn(
+            `Request to ${url} returned ${response.status} (5xx error). Retrying ${attempt}/${maxRetries}...`
+          );
+          continue;
+        }
       }
+      // For non-5xx errors, don't retry.
+      break;
     } catch (err) {
       lastError = err;
       if (attempt < maxRetries) {
@@ -57,18 +59,14 @@ export async function signAndRequest(
         );
         continue;
       }
-      // last attempt failed with network error
       throw err;
     }
   }
 
   if (!response) {
-    // This should never happen, but TS wants us to check
     throw new Error("Failed to make request: no response object");
   }
 
-  // If after retries we still got a non-OK response, you can choose to throw or return it:
-  // here we'll just return it so caller can inspect status/data.
   let data: any;
   try {
     data = await response.json();
