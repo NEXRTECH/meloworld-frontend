@@ -5,7 +5,7 @@ import emotional from "@/assets/personality.png";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/components/stores/auth-store";
-import { Assessment } from "@/components/types";
+import { Course } from "@/components/types";
 import { getAllAssessments } from "@/services/assessments";
 import { PinContainer } from "@/components/ui/3d-pin";
 import Card from "@/components/ui/card/card";
@@ -16,7 +16,7 @@ import { get } from "http";
 const CandidateHome: React.FC = () => {
   const router = useRouter();
   const { token } = useAuthStore();
-  const [courseData, setCourseData] = useState<Assessment[]>([]);
+  const [courseData, setCourseData] = useState<Course[]>([]);
   const { getAssessments } = useCandidateStore();
   const assessments = useCandidateStore((s) => s.assessments);
   useEffect(() => {

@@ -1,16 +1,20 @@
 import { create } from "zustand";
 import { persist, devtools } from "zustand/middleware";
-import { Organization } from "../types";
+import { Course, Organization, Quiz } from "../types";
 import { updateQuiz } from "@/services/quizzes";
 import { updateOrganization } from "@/services/organizations";
+import { getAllAssessments } from "@/services/assessments";
 
 export interface AdminStoreState {
   // Add your state properties here
   organizations: Organization[];
+  assessments: Course[];
   // Define more properties as needed
 
   // Add your actions/methods here
   setOrganizations: (orgs: Organization[]) => void;
+  setAssessments: (assessments: Course[]) => void;
+  getAssessments: (token: string) => Promise<void>;
   fetchOrganizations: () => Promise<void>;
   updateOrganization: (
     orgId: number,
@@ -24,8 +28,23 @@ export const useAdminStore = create<AdminStoreState>()(
       (set) => ({
         // Initialize your state
         organizations: [],
-
+        assessments: [],
         // Define actions
+        setAssessments: (assessments: Course[]) => set({ assessments }),
+        getAssessments: async (token: string) => {
+          try {
+            const response = await getAllAssessments(token);
+            if (response.ok) {
+              const data = await response.json();
+              const assessments: Quiz[] = data.courses ?? [];
+              console.debug("Fetched assessments:", assessments);
+              set({ assessments });
+            }
+          } catch (error) {
+            console.error("Error fetching assessments:", error);
+            throw error;
+          }
+        },
         setOrganizations: (orgs) => set({ organizations: orgs }),
         fetchOrganizations: async () => {
           // TODO: Replace with a real API call to fetch organizations
@@ -65,7 +84,7 @@ export const useAdminStore = create<AdminStoreState>()(
               throw new Error("Failed to update organization");
             }
             const data = await response.data.organization;
-            
+
             // Update the organization in the store
             set((state) => ({
               organizations: state.organizations.map((org) =>

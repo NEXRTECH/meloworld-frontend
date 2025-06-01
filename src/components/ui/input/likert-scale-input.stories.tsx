@@ -30,6 +30,6 @@ export const Default: Story = {
 export const SelectedNeutral: Story = {
   args: {
     name: 'likert',
-    value: '3',
+    value: 3,
   },
 };

@@ -4,7 +4,7 @@ import Input from "../../../ui/input/input";
 import { FaSearch } from "react-icons/fa";
 import Table from "../../../ui/table/table";
 import { useAuthStore } from "../../../stores/auth-store";
-import { Assessment } from "../../../types";
+import { Course } from "../../../types";
 import AssessmentDropdownRow from "./assessment-dropdown-row";
 import { getAllAssessments } from "../../../../services/assessments";
 import Button from "../../../ui/button/button";
@@ -12,7 +12,7 @@ import { FaFilter, FaSort } from "react-icons/fa6";
 
 const AssessmentsHome: React.FC = () => {
   const token = useAuthStore((state) => state.token);
-  const [assessments, setAssessments] = useState<Assessment[]>([]);
+  const [assessments, setAssessments] = useState<Course[]>([]);
 
   useEffect(() => {
     const fetchAssessments = async () => {

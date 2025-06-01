@@ -1,8 +1,8 @@
 "use client";
 
 import AssessmentDropdownRow from "@/components/panels/admin/assessments/assessment-dropdown-row";
+import { useAdminStore } from "@/components/stores/admin-store";
 import { useAuthStore } from "@/components/stores/auth-store";
-import { Assessment } from "@/components/types";
 import Button from "@/components/ui/button/button";
 import Card from "@/components/ui/card/card";
 import Input from "@/components/ui/input/input";
@@ -13,6 +13,11 @@ import { FaFilter, FaSort } from "react-icons/fa6";
 
 const AssessmentsHome: React.FC = () => {
   const token = useAuthStore((state) => state.token);
+  const assessments = useAdminStore((s) => s.assessments);
+  const { getAssessments } = useAdminStore();
+  useEffect(() => {
+    if (token) getAssessments(token);
+  }, []);
 
   return (
     <div className="dashboard-panel">
