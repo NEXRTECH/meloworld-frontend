@@ -25,8 +25,14 @@ const AssessmentForm: React.FC = () => {
   const router = useRouter();
   const token = useAuthStore((s) => s.token);
   const { courseId } = useParams();
+  const courseIdNumber = Number(courseId);
   const quizCourseDict = useCandidateStore((s) => s.quizCourseDict);
-  const { getQuestionsByCourseId } = useCandidateStore();
+
+  // Prefill user responses from submissionCourseDict if available
+  
+  const submissionCourseDict = useCandidateStore((s) => s.submissionCourseDict);
+  
+  const { getQuestionsByCourseId, submitAnswer } = useCandidateStore();
   const [pageIndex, setPageIndex] = useState(0);
   const [current, setCurrent] = useState<Question | null>(null);
   const [score, setScore] = useState<number>(0);
@@ -34,20 +40,26 @@ const AssessmentForm: React.FC = () => {
   const [userAnswers, setUserAnswers] = useState<number[]>([]);
   const [openSubmitDialog, setOpenSubmitDialog] = useState(false);
 
-  const {toast} = useToast();
+  const { toast } = useToast();
 
   // Fetch questions
   useEffect(() => {
     if (token && courseId && !quizCourseDict[parseInt(courseId as string)]) {
       getQuestionsByCourseId(token, parseInt(courseId as string));
     }
-  }, [token, courseId, quizCourseDict]);
+  }, []);
 
   useEffect(() => {
-    if (quizCourseDict[parseInt(courseId as string)]) {
-      setQuestions(quizCourseDict[parseInt(courseId as string)]);
+    if (quizCourseDict[courseIdNumber]) {
+      setQuestions(quizCourseDict[courseIdNumber]);
     }
-  }, [quizCourseDict, courseId]);
+    if (submissionCourseDict[courseIdNumber]) {
+      setUserAnswers(submissionCourseDict[courseIdNumber].map(sub => sub.score));
+    }
+    if (submissionCourseDict[courseIdNumber] && submissionCourseDict[courseIdNumber].length > 0) {
+      setPageIndex(submissionCourseDict[courseIdNumber].length - 1);
+    }
+  }, [quizCourseDict, submissionCourseDict, courseIdNumber]);
 
   // Initialize userAnswers
   useEffect(() => {
@@ -58,9 +70,6 @@ const AssessmentForm: React.FC = () => {
 
   // Handle answer selection
   const handleAnswer = (answer: number) => {
-    console.log("Selected answer:", answer);
-    setScore(score + answer);
-    console.log("Current score:", score);
     setUserAnswers((prev) => {
       const next = [...prev];
       next[pageIndex] = answer;
@@ -75,8 +84,30 @@ const AssessmentForm: React.FC = () => {
   }, [pageIndex]);
 
   const goPrev = () => setPageIndex((i) => Math.max(0, i - 1));
-  const goNext = () =>
-    setPageIndex((i) => Math.min(questions.length - 1, i + 1));
+  const goNext = () => {
+    // Submit answer call
+    if (token && current) {
+      submitAnswer(
+        token,
+        Number(courseId),
+        5,
+        current.quiz_id as number,
+        current.id,
+        currentAnswer,
+        currentAnswer
+      )
+        .then(() => setPageIndex((i) => Math.min(questions.length - 1, i + 1)))
+        .catch((err) => {
+          toast({
+            position: "top-right",
+            title: "Error submitting answer",
+            description: err.message,
+            variant: "error",
+          });
+        });
+      // setPageIndex((i) => Math.min(questions.length - 1, i + 1));
+    }
+  };
 
   const currentAnswer = userAnswers[pageIndex];
 
@@ -96,7 +127,7 @@ const AssessmentForm: React.FC = () => {
           md:w-[100vw] md:h-[95vh] md:p-10 md:mt-5
         `}
       >
-        <Button onClick={() => router.back()} size="xs" className="w-fit mb-5">
+        <Button onClick={() => router.push(`/candidate/course/${courseId}`)} size="xs" className="w-fit mb-5">
           <FiChevronLeft />
           Back
         </Button>
@@ -218,13 +249,17 @@ const AssessmentForm: React.FC = () => {
           {pageIndex < questions.length - 1 ? (
             <button
               onClick={goNext}
+              disabled={currentAnswer === undefined || currentAnswer === null}
               className="disabled:opacity-50 rounded-full hover:bg-sky-900/10 p-2 md:p-3"
             >
               <FiChevronRight className="md:size-12 size-12" />
             </button>
           ) : (
             <div className="flex items-center justify-end w-full">
-              <Dialog open={openSubmitDialog} onOpenChange={setOpenSubmitDialog}>
+              <Dialog
+                open={openSubmitDialog}
+                onOpenChange={setOpenSubmitDialog}
+              >
                 <DialogTrigger asChild>
                   <Button size="sm" variant="outline">
                     Submit
@@ -239,10 +274,7 @@ const AssessmentForm: React.FC = () => {
                     </DialogDescription>
                   </DialogHeader>
                   <DialogFooter>
-                    <Button
-                      variant="outline"
-                      size="xs"
-                    >
+                    <Button variant="outline" size="xs">
                       Cancel
                     </Button>
                     <Button
@@ -250,15 +282,38 @@ const AssessmentForm: React.FC = () => {
                       className="ml-2"
                       onClick={() => {
                         // Handle submission logic here
-                        setOpenSubmitDialog(false);
-                        toast({
-                            title: "Assessment Submitted",
-                            description: "Your answers have been recorded.",
-                            variant: "success",
-                          });
-                        setTimeout(() => {
-                          router.push("/candidate");
-                        }, 2000);
+                        if (token && current) {
+                          submitAnswer(
+                            token,
+                            Number(courseId),
+                            5,
+                            current.quiz_id as number,
+                            current.id,
+                            currentAnswer,
+                            currentAnswer
+                          )
+                            .then(() => {
+                              toast({
+                                title: "Assessment Submitted",
+                                description: "Your answers have been recorded.",
+                                variant: "success",
+                              });
+                              setOpenSubmitDialog(false);
+
+                              setTimeout(() => {
+                                router.push(`/candidate/course/${courseId}`);
+                              }, 2000);
+                            })
+                            .catch((err) => {
+                              toast({
+                                position: "top-right",
+                                title: "Error submitting answer",
+                                description: err.message,
+                                variant: "error",
+                              });
+                            });
+                          // setPageIndex((i) => Math.min(questions.length - 1, i + 1));
+                        }
                       }}
                     >
                       Submit

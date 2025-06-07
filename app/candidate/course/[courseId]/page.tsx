@@ -11,33 +11,41 @@ import Card from "@/components/ui/card/card";
 import Button from "@/components/ui/button/button";
 import { FiChevronLeft, FiDownload } from "react-icons/fi";
 import { PiPlayFill } from "react-icons/pi";
-import { BsChevronBarLeft } from "react-icons/bs";
+import { BsChevronBarLeft, BsChevronCompactRight } from "react-icons/bs";
+import { useCandidateStore } from "@/components/stores/candidate-store";
+import { Progress } from "@/components/ui/progress/progress";
 
 const CandidateCoursePage: React.FC = () => {
   const { token } = useAuthStore();
   const router = useRouter();
   const { courseId } = useParams();
-  const [quizzesData, setQuizzesData] = useState<Quiz[]>([]);
+  const quizCourseDict = useCandidateStore((s) => s.quizCourseDict);
+
+  const submissionCourseDict = useCandidateStore((s) => s.submissionCourseDict);
+
+  const { getQuestionsByCourseId, getSubmissionsByCourseId } =
+    useCandidateStore();
+
   useEffect(() => {
-    const fetchChapters = async () => {
-      if (token) {
-        try {
-          const response = await getAllQuizzesByChapter(
-            token,
-            Number(courseId)
-          );
-          if (response?.ok) {
-            const data = await response.json();
-            const quizzes: Quiz[] = data.quizzes ?? [];
-            setQuizzesData(quizzes);
-          }
-        } catch (err) {
-          console.error(err);
-        }
-      }
-    };
-    fetchChapters();
+    if (token && courseId && !quizCourseDict[parseInt(courseId as string)]) {
+      getQuestionsByCourseId(token, parseInt(courseId as string));
+    }
+    getSubmissionsByCourseId(token!, parseInt(courseId as string));
   }, []);
+
+  const courseIdNumber = parseInt(courseId as string);
+  const isAssessmentComplete =
+    (quizCourseDict[courseIdNumber]?.length ?? 0) ===
+    (submissionCourseDict[courseIdNumber]?.length ?? 0);
+  const progressPercentage =
+    quizCourseDict[courseIdNumber]?.length > 0
+      ? Math.round(
+          (submissionCourseDict[courseIdNumber]?.length /
+            quizCourseDict[courseIdNumber].length) *
+            100
+        )
+      : 0;
+
   return (
     <motion.div
       className="relative min-h-screen w-full p-4 md:p-8 lg:p-20 overflow-x-hidden"
@@ -45,13 +53,13 @@ const CandidateCoursePage: React.FC = () => {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <Button onClick={() => router.back()} size="xs" className="mb-5">
+      <Button onClick={() => router.push(`/candidate`)} size="xs" className="mb-5">
         <FiChevronLeft />
         Back
       </Button>
       {/* Hero Section */}
       <motion.div
-        className="grid grid-cols-1 bg-secondary/80 p-10 lg:py-10 lg:px-14 shadow-lg rounded-xl md:grid-cols-2 gap-10 items-center mb-10"
+        className="grid grid-cols-1 bg-secondary/60 p-10 lg:py-10 lg:px-14 shadow-lg rounded-xl md:grid-cols-2 gap-10 items-center mb-10"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
@@ -65,8 +73,13 @@ const CandidateCoursePage: React.FC = () => {
             interpersonal interactions, and the ability to adapt, organize, and
             manage stress effectively.
           </p>
+          <div className="flex gap-3 justify-center items-center">
+          <Progress value={progressPercentage} />
+          <p className="font-semibold">{progressPercentage}%</p>
+          </div>
           <div className="flex flex-wrap gap-4 justify-center md:justify-start">
             <Button
+              disabled={isAssessmentComplete}
               onClick={() => router.push(`/candidate/course/${courseId}/quiz`)}
               size="sm"
               className="mt-4 w-fit"
@@ -74,9 +87,17 @@ const CandidateCoursePage: React.FC = () => {
               <PiPlayFill />
               Start Assessment
             </Button>
-            <Button variant="outline" size="sm" className="lg:mt-4 w-fit">
-              <FiDownload />
-              Download Report
+            <Button
+              disabled={!isAssessmentComplete}
+              onClick={() =>
+                router.push(`/candidate/course/${courseId}/report`)
+              }
+              variant="outline"
+              size="sm"
+              className="lg:mt-4 w-fit"
+            >
+              <BsChevronCompactRight />
+              View Report
             </Button>
           </div>
         </div>

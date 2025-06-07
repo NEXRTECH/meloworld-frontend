@@ -1,8 +1,8 @@
 import React from "react";
 import LoginForm from "src/components/forms/login";
 
-const AdminLogin = () => {
+const CandidateLogin = () => {
   return <LoginForm userRole="candidate" />;
 };
 
-export default AdminLogin;
+export default CandidateLogin;
