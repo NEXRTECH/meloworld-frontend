@@ -146,24 +146,6 @@ const SignUpForm: React.FC<SignUpProps> = ({ userRole }) => {
           }
           break;
 
-        case "candidate":
-          response = await signupService.candidate(
-            formState.name.value,
-            formState.email.value,
-            formState.password.value
-          );
-          if (response.ok) {
-            setLoading(false);
-            toast({
-              title: "Signup successful",
-              description: "Redirecting to candidate portal…",
-              variant: "success",
-              position: "top-right",
-            });
-            router.push("/auth/candidate/login");
-          }
-          break;
-
         default:
           // you can handle unsupported roles here
           setLoading(false);
