@@ -33,12 +33,17 @@ export const signupService = {
     name: string,
     email: string,
     password: string,
+    organizationId: number,
+    age: number, 
+    gender: "male" | "female"
   ) => {
     const payload = {
       name: name,
       email: email,
       password: password,
-      organization_id: 1
+      organization_id: organizationId,
+      age: age,
+      gender: gender
     };
 
     const response = await signAndRequest(

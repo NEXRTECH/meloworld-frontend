@@ -222,52 +222,64 @@ const LoginForm: React.FC<LoginProps> = ({ userRole }) => {
 
   return (
     <>
-      <form
-        onSubmit={handleLogin}
-        className="w-full flex items-center -mt-10 lg:items-center flex-col gap-2"
-      >
-        <div className="flex flex-col gap-1 w-full justify-start items-center mb-5">
-          <label className="text-sm">Please enter your Email ID</label>
-          <Input
-            name="email"
-            onChange={handleFormChange}
-            value={formState["email"].value}
-            placeholder="Email"
-            icon={<IoMail />}
-          />
-          {formState["email"].error.length > 0 && (
-            <p className="text-xs text-red-400">{formState["email"].error}</p>
-          )}
+      <div className="flex justify-center items-center w-full">
+        <div className="bg-white p-8 w-full max-w-md">
+          <form
+            onSubmit={handleLogin}
+            className="w-full flex items-center lg:items-center flex-col gap-2"
+          >
+            <div className="flex flex-col gap-1 w-full justify-start items-center mb-5">
+              <label className="text-sm">Please enter your Email ID</label>
+              <Input
+                name="email"
+                onChange={handleFormChange}
+                value={formState["email"].value}
+                placeholder="Email"
+                icon={<IoMail />}
+              />
+              {formState["email"].error.length > 0 && (
+                <p className="text-xs text-red-400">
+                  {formState["email"].error}
+                </p>
+              )}
+            </div>
+            <div className="flex flex-col gap-1 w-full justify-start items-center mb-5">
+              <label className="text-sm">Enter password</label>
+              <Input
+                name="password"
+                onChange={handleFormChange}
+                type="password"
+                value={formState["password"].value}
+                placeholder="Password"
+                icon={<IoKey />}
+              />
+              {formState["password"].error.length > 0 && (
+                <p className="text-xs text-red-400">
+                  {formState["password"].error}
+                </p>
+              )}
+            </div>
+            <Button disabled={loading} type="submit" className="w-fit mt-5">
+              {!loading ? (
+                <p>Login</p>
+              ) : (
+                <span className="flex gap-2 items-center">
+                  <BsHourglass className="animate-bounce" /> Logging In
+                </span>
+              )}
+            </Button>
+          </form>
+          <p className="text-sm mt-4 text-center">
+            Don't have an account?{" "}
+            <Link
+              href={`/auth/${userRole}/signup`}
+              className="font-semibold hover:underline"
+            >
+              Sign up
+            </Link>
+          </p>
         </div>
-        <div className="flex flex-col gap-1 w-full justify-start items-center mb-5">
-          <label className="text-sm">Enter password</label>
-          <Input
-            name="password"
-            onChange={handleFormChange}
-            type="password"
-            value={formState["password"].value}
-            placeholder="Password"
-            icon={<IoKey />}
-          />
-          {formState["password"].error.length > 0 && (
-            <p className="text-xs text-red-400">
-              {formState["password"].error}
-            </p>
-          )}
-        </div>
-        <Button disabled={loading} type="submit" className="w-fit mt-5">
-          {!loading ? <p>Login</p> : <span className="flex gap-2 items-center"><BsHourglass className="animate-bounce"/> Logging In</span>}
-        </Button>
-      </form>
-      <p className="text-sm mt-4 text-center">
-        Don't have an account?{" "}
-        <Link
-          href={`/auth/${userRole}/signup`}
-          className="font-semibold hover:underline"
-        >
-          Sign up
-        </Link>
-      </p>
+      </div>
     </>
   );
 };
