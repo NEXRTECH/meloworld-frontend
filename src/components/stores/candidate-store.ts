@@ -26,11 +26,13 @@ export interface CandidateStoreState {
   assessments: Course[];
   organizations: Organization[];
   reports: Record<number, Report>;
-  quizCourseDict: Record<number, Question[]>; // Assuming you want to keep track of quizzes by Course ID
+  quizQuestionsCourseDict: Record<number, Question[]>;
   submissionCourseDict: Record<number, Submission[]>;
+  courseQuizMetadataDict: Record<number, Quiz[]>;
   // Add your actions/methods here
   setOrganizations: (organizations: Organization[]) => void;
   setReports: (reports: Record<number, Report>) => void;
+  setCourseQuizMetadataDict: (courseId: number, quizzes: Quiz[]) => void;
   setSubmissionCourseDict: (
     courseId: number,
     submissions: Submission[]
@@ -41,7 +43,7 @@ export interface CandidateStoreState {
   getAssessments: (token: string) => Promise<void>;
   getQuestionsByCourseId: (token: string, courseId: number) => Promise<void>;
   getSubmissionsByCourseId: (token: string, courseId: number) => Promise<void>;
-  setQuizCourseDict: (courseId: number, questions: Question[]) => void;
+  setQuizQuestionsCourseDict: (courseId: number, questions: Question[]) => void;
   submitAnswer: (
     token: string,
     courseId: number,
@@ -62,13 +64,21 @@ export const useCandidateStore = create<CandidateStoreState>()(
         assessments: [],
         reports: {},
         organizations: [],
-        quizCourseDict: {},
+        quizQuestionsCourseDict: {},
         submissionCourseDict: {},
+        courseQuizMetadataDict: {},
         // Define actions
         setReports: (reports: Record<number, Report>) => set({ reports }),
         setOrganizations: (organizations: Organization[]) =>
           set({ organizations }),
         setAssessments: (assessments: Course[]) => set({ assessments }),
+        setCourseQuizMetadataDict: (courseId: number, quizzes: Quiz[]) =>
+          set((state) => ({
+            courseQuizMetadataDict: {
+              ...state.courseQuizMetadataDict,
+              [courseId]: quizzes,
+            },
+          })),
         getOrganizations: async (token: string) => {
           const dummyData: Organization[] = [
             {
@@ -116,6 +126,12 @@ export const useCandidateStore = create<CandidateStoreState>()(
             if (response.ok) {
               const data = await response.json();
               const quizzes: Quiz[] = data.quizzes ?? [];
+              set((state) => ({
+                courseQuizMetadataDict: {
+                  ...state.courseQuizMetadataDict,
+                  [courseId]: quizzes,
+                },
+              }));
               console.debug(
                 "Fetched quizzes for course ID",
                 courseId,
@@ -141,10 +157,10 @@ export const useCandidateStore = create<CandidateStoreState>()(
                     questions
                   );
                   set((state) => ({
-                    quizCourseDict: {
-                      ...state.quizCourseDict,
+                    quizQuestionsCourseDict: {
+                      ...state.quizQuestionsCourseDict,
                       [courseId]: [
-                        ...(state.quizCourseDict[courseId] || []),
+                        ...(state.quizQuestionsCourseDict[courseId] || []),
                         ...questions,
                       ],
                     },
@@ -173,10 +189,10 @@ export const useCandidateStore = create<CandidateStoreState>()(
             }
           } catch {}
         },
-        setQuizCourseDict: (courseId: number, questions: Question[]) =>
+        setQuizQuestionsCourseDict: (courseId: number, questions: Question[]) =>
           set((state) => ({
-            quizCourseDict: {
-              ...state.quizCourseDict,
+            quizQuestionsCourseDict: {
+              ...state.quizQuestionsCourseDict,
               [courseId]: questions,
             },
           })),
@@ -239,7 +255,9 @@ export const useCandidateStore = create<CandidateStoreState>()(
           set(() => ({
             assessments: [],
             reports: {},
-            quizCourseDict: {},
+            quizQuestionsCourseDict: {},
+            courseQuizMetadataDict: {},
+            submissionCourseDict: {},
           })),
       }),
       {
