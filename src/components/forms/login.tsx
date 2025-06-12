@@ -1,285 +1,227 @@
 "use client";
 
-import React, { ChangeEvent, FormEvent, useEffect, useState } from "react";
-import Button from "../ui/button/button";
-import { IoKey, IoMail } from "react-icons/io5";
-import Input from "../ui/input/input";
-import { FormState } from "./signup";
-import { loginService } from "../../services/auth";
-import { useAuthStore } from "../stores/auth-store";
-import { UserRole } from "../types";
-import { useToast } from "../hooks/use-toast";
+import React, { ChangeEvent, FormEvent, useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BsCircle, BsHourglass } from "react-icons/bs";
+
+// UI & State Management
+import Button from "../ui/button/button";
+import Input from "../ui/input/input";
+import { useAuthStore } from "../stores/auth-store";
+import { useToast } from "../hooks/use-toast";
+import { FormState, UserRole } from "../types"; // Assuming types are centralized
+
+// Services & Icons
+import { loginService } from "../../services/auth";
+import { IoKey, IoMail } from "react-icons/io5";
+import { CgSpinner } from "react-icons/cg";
+import { AnimatePresence, motion } from "framer-motion";
 
 interface LoginProps {
   userRole: UserRole;
 }
 
-const LoginForm: React.FC<LoginProps> = ({ userRole }) => {
-  const { token, hydrated } = useAuthStore();
-  const router = useRouter();
-  const setAuth = useAuthStore((state) => state.setAuth);
-  const [loading, setLoading] = useState(false);
-  const { toast } = useToast();
+// A simple email validation regex
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const LoginForm: React.FC<LoginProps> = ({ userRole }) => {
+  const router = useRouter();
+  const { toast } = useToast();
+  const { setAuth, token, hydrated } = useAuthStore();
+
+  const [loading, setLoading] = useState(false);
   const [formState, setFormState] = useState<FormState>({
-    email: {
-      value: "",
-      error: "",
-    },
-    password: {
-      value: "",
-      error: "",
-    },
+    email: { value: "", error: "" },
+    password: { value: "", error: "" },
   });
 
+  // Memoized value to determine if the form is valid for submission
+  const isFormValid = useMemo(() => {
+    return (
+      !formState.email.error &&
+      !formState.password.error &&
+      formState.email.value !== "" &&
+      formState.password.value !== ""
+    );
+  }, [formState]);
+
+  // Effect to redirect users who are already logged in
   useEffect(() => {
     if (token && hydrated) {
-      if (userRole === "admin") {
-        router.replace("/admin/dashboard");
-      } else if (userRole === "candidate") {
-        router.replace("/candidate");
-      } else if (userRole === "therapist") {
-        router.replace("/therapist/dashboard");
-      }
+      const paths: Record<UserRole, string> = {
+        admin: "/admin/dashboard",
+        candidate: "/candidate",
+        therapist: "/therapist/dashboard",
+      };
+      router.replace(paths[userRole] || "/");
     }
   }, [token, userRole, router, hydrated]);
 
+  // Refactored validation logic for real-time feedback
   const handleFormChange = (e: ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    const key = e.target.name;
-    const value = e.target.value;
+    const { name, value } = e.target;
+    let error = "";
 
-    // add constraints
-    switch (key) {
+    switch (name) {
       case "email":
-        if (value.length < 2) {
-          setFormState((prevState) => ({
-            ...prevState,
-            [key]: { value: value, error: "Minimum 3 characters Required" },
-          }));
-        } else {
-          setFormState((prevState) => ({
-            ...prevState,
-            [key]: { value: value, error: "" },
-          }));
+        if (!EMAIL_REGEX.test(value)) {
+          error = "Please enter a valid email address.";
         }
         break;
-
       case "password":
         if (value.length < 8) {
-          setFormState((prevState) => ({
-            ...prevState,
-            [key]: { value: value, error: "Minimum 8 characters Required" },
-          }));
-        } else {
-          setFormState((prevState) => ({
-            ...prevState,
-            [key]: { value: value, error: "" },
-          }));
+          error = "Password must be at least 8 characters long.";
         }
         break;
-
-      default:
-        break;
     }
+
+    setFormState((prev) => ({ ...prev, [name]: { value, error } }));
   };
 
   const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!isFormValid) return; // Guard clause
+
     setLoading(true);
-    let errorFlag = false;
-    Object.values(formState).forEach((value) => {
-      if (value.error.length > 0) {
-        errorFlag = true;
-      }
-    });
 
-    if (errorFlag) return;
-
-    // send login request
     try {
-      let response = null as {
-        status: number;
-        ok: boolean;
-        data: any;
-        headers: Headers;
-      } | null;
+      const credentials = {
+        email: formState.email.value,
+        password: formState.password.value,
+      };
 
-      switch (userRole) {
-        case "admin":
-          response = await loginService.admin(
-            formState.email.value,
-            formState.password.value
-          );
-          if (response.ok) {
-            const { token, name, email } = response.data;
-            toast({
-              title: "Admin signup successful",
-              description: "Redirecting to admin dashboard…",
-              variant: "success",
-              position: "top-right",
-            });
-            setAuth(token, "admin", { name, email });
-            setLoading(false);
-            router.push("/admin/dashboard");
-          }
-          break;
+      const response = await loginService[userRole](credentials.email, credentials.password);
 
-        case "candidate":
-          response = await loginService.candidate(
-            formState.email.value,
-            formState.password.value
-          );
-          if (response.ok) {
-            const { token, name, email } = response.data;
-            setAuth(token, "candidate", { name, email });
-            setLoading(false);
-            toast({
-              title: "Login successful",
-              description: "Redirecting to candidate portal…",
-              variant: "success",
-              position: "top-right",
-            });
-            router.push("/candidate");
-          } else {
-            toast({
-              title: "Login failed",
-              description: "Invalid email or password",
-              variant: "error",
-              position: "top-right",
-            });
-            setLoading(false);
-            return;
-          }
-          break;
-
-        case "therapist":
-          response = await loginService.therapist(
-            formState.email.value,
-            formState.password.value
-          );
-          if (response.ok) {
-            const { therapist } = response.data;
-            const { email, therapist_name, therapist_id, license_number } =
-              therapist;
-            setAuth(`${therapist_id + "-" + license_number}`, "therapist", {
-              name: therapist_name,
-              email,
-              therapist_id,
-            });
-            setLoading(false);
-            toast({
-              title: "Login successful",
-              description: "Redirecting to therapist dashboard…",
-              variant: "success",
-              position: "top-right",
-            });
-            router.push("/candidate");
-          } else {
-            // do a check for 4xx error and give an error toast
-            if (response && response.status >= 400 && response.status < 500) {
-              toast({
-                title: "Login failed",
-                description: "Invalid email or password",
-                variant: "error",
-                position: "top-right",
-              });
-            } else {
-              toast({
-                title: "Login failed",
-                description: "Something went wrong. Please try again later.",
-                variant: "error",
-                position: "top-right",
-              });
-            }
-            setLoading(false);
-            return;
-          }
-          break;
-
-        default:
-          // you can handle unsupported roles here
-          toast({
-            title: "Role not supported",
-            variant: "error",
-            position: "top-right",
-          });
-          return;
+      if (response.ok) {
+        const { token, name, email } = response.data; // Assuming a consistent success response structure
+        toast({
+          title: "Login Successful!",
+          description: `Redirecting to ${userRole} dashboard…`,
+          variant: "success",
+        });
+        setAuth(token, userRole, { name, email });
+        // The useEffect will handle the redirection
+      } else {
+        // Standardized error handling for all roles
+        const errorData = response.data;
+        const description = errorData?.message || "Invalid credentials or server error.";
+        toast({
+          title: "Login Failed",
+          description: description,
+          variant: "error",
+        });
       }
     } catch (err) {
+      console.error("Login exception:", err);
       toast({
-        title: "Login failed",
-        description: (err as any).message,
+        title: "An Unexpected Error Occurred",
+        description: err instanceof Error ? err.message : "Please try again later.",
         variant: "error",
-        // position: "top-right",
       });
+    } finally {
       setLoading(false);
     }
   };
+  
+  // Variants for animating the error messages
+  const errorVariants = {
+    hidden: { opacity: 0, y: -5 },
+    visible: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -5 },
+  };
+
 
   return (
     <>
-      <div className="flex justify-center items-center w-full">
-        <div className="bg-white p-8 w-full max-w-md">
-          <form
-            onSubmit={handleLogin}
-            className="w-full flex items-center lg:items-center flex-col gap-2"
-          >
-            <div className="flex flex-col gap-1 w-full justify-start items-center mb-5">
-              <label className="text-sm">Please enter your Email ID</label>
-              <Input
-                name="email"
-                onChange={handleFormChange}
-                value={formState["email"].value}
-                placeholder="Email"
-                icon={<IoMail />}
-              />
-              {formState["email"].error.length > 0 && (
-                <p className="text-xs text-red-400">
-                  {formState["email"].error}
-                </p>
-              )}
-            </div>
-            <div className="flex flex-col gap-1 w-full justify-start items-center mb-5">
-              <label className="text-sm">Enter password</label>
-              <Input
-                name="password"
-                onChange={handleFormChange}
-                type="password"
-                value={formState["password"].value}
-                placeholder="Password"
-                icon={<IoKey />}
-              />
-              {formState["password"].error.length > 0 && (
-                <p className="text-xs text-red-400">
-                  {formState["password"].error}
-                </p>
-              )}
-            </div>
-            <Button disabled={loading} type="submit" className="w-fit mt-5">
-              {!loading ? (
-                <p>Login</p>
-              ) : (
-                <span className="flex gap-2 items-center">
-                  <BsHourglass className="animate-bounce" /> Logging In
-                </span>
-              )}
-            </Button>
-          </form>
-          <p className="text-sm mt-4 text-center">
-            Don't have an account?{" "}
-            <Link
-              href={`/auth/${userRole}/signup`}
-              className="font-semibold hover:underline"
-            >
-              Sign up
-            </Link>
-          </p>
-        </div>
+      <div className="text-center">
+        <h2 className="text-xl font-bold sm:text-2xl">
+          Welcome Back!
+        </h2>
+        <p className="text-sm mt-1">
+          Login to your account.
+        </p>
       </div>
+
+      <form onSubmit={handleLogin} className="w-full space-y-6 mt-8">
+        {/* Email Input */}
+        <div className="space-y-1">
+          <Input
+            name="email"
+            type="email"
+            onChange={handleFormChange}
+            value={formState.email.value}
+            placeholder="Email Address"
+            icon={<IoMail />}
+            aria-invalid={!!formState.email.error}
+          />
+          <AnimatePresence>
+            {formState.email.error && (
+              <motion.p
+                className="text-xs text-red-500"
+                variants={errorVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+                {formState.email.error}
+              </motion.p>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Password Input */}
+        <div className="space-y-1">
+          <Input
+            name="password"
+            type="password"
+            onChange={handleFormChange}
+            value={formState.password.value}
+            placeholder="Password"
+            icon={<IoKey />}
+            aria-invalid={!!formState.password.error}
+          />
+          <AnimatePresence>
+            {formState.password.error && (
+              <motion.p
+                className="text-xs text-red-500"
+                variants={errorVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+              >
+                {formState.password.error}
+              </motion.p>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Submit Button */}
+        <Button
+          disabled={loading || !isFormValid}
+          type="submit"
+          className="w-full" // Changed to full-width for a more modern, mobile-friendly look
+        >
+          {loading ? (
+            <span className="flex gap-2 items-center justify-center">
+              <CgSpinner className="animate-spin text-lg" />
+              Logging In...
+            </span>
+          ) : (
+            "Login"
+          )}
+        </Button>
+      </form>
+
+      {/* Sign up Link */}
+      <p className="text-sm text-center text-gray-600 mt-8">
+        Don't have an account?{" "}
+        <Link
+          href={`/auth/${userRole}/signup`}
+          className="font-semibold hover:underline transition-colors"
+        >
+          Sign up
+        </Link>
+      </p>
     </>
   );
 };

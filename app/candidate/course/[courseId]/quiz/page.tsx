@@ -26,12 +26,12 @@ const AssessmentForm: React.FC = () => {
   const token = useAuthStore((s) => s.token);
   const { courseId } = useParams();
   const courseIdNumber = Number(courseId);
-  const quizCourseDict = useCandidateStore((s) => s.quizCourseDict);
+  const quizQuestionsCourseDict = useCandidateStore((s) => s.quizQuestionsCourseDict);
 
   // Prefill user responses from submissionCourseDict if available
-  
+
   const submissionCourseDict = useCandidateStore((s) => s.submissionCourseDict);
-  
+
   const { getQuestionsByCourseId, submitAnswer } = useCandidateStore();
   const [pageIndex, setPageIndex] = useState(0);
   const [current, setCurrent] = useState<Question | null>(null);
@@ -44,14 +44,14 @@ const AssessmentForm: React.FC = () => {
 
   // Fetch questions
   useEffect(() => {
-    if (token && courseId && !quizCourseDict[parseInt(courseId as string)]) {
+    if (token && courseId && !quizQuestionsCourseDict[parseInt(courseId as string)]) {
       getQuestionsByCourseId(token, parseInt(courseId as string));
     }
   }, []);
 
   useEffect(() => {
-    if (quizCourseDict[courseIdNumber]) {
-      setQuestions(quizCourseDict[courseIdNumber]);
+    if (quizQuestionsCourseDict[courseIdNumber]) {
+      setQuestions(quizQuestionsCourseDict[courseIdNumber]);
     }
     if (submissionCourseDict[courseIdNumber]) {
       setUserAnswers(submissionCourseDict[courseIdNumber].map(sub => sub.score));
@@ -59,7 +59,7 @@ const AssessmentForm: React.FC = () => {
     if (submissionCourseDict[courseIdNumber] && submissionCourseDict[courseIdNumber].length > 0) {
       setPageIndex(submissionCourseDict[courseIdNumber].length - 1);
     }
-  }, [quizCourseDict, submissionCourseDict, courseIdNumber]);
+  }, [quizQuestionsCourseDict, submissionCourseDict, courseIdNumber]);
 
   // Initialize userAnswers
   useEffect(() => {
@@ -138,11 +138,10 @@ const AssessmentForm: React.FC = () => {
               className="absolute inset-0 bg-sky-900"
               initial={false}
               animate={{
-                width: `${
-                  questions.length
+                width: `${questions.length
                     ? ((pageIndex + 1) / questions.length) * 100
                     : 0
-                }%`,
+                  }%`,
               }}
               transition={{ duration: 0.3 }}
             />
@@ -163,9 +162,26 @@ const AssessmentForm: React.FC = () => {
                     {current.question}
                   </p>
                   <LikertScaleInput
-                    options={Object.entries(current.options).map(
-                      ([key, label]) => label
-                    )}
+                    options={(() => {
+                      const options = Object.entries(current.options).map(([key, label]) => label);
+                      const likertOptions = [
+                        "Strongly Disagree",
+                        "Disagree",
+                        "Neither Agree nor Disagree",
+                        "Agree",
+                        "Strongly Agree"
+                      ];
+
+                      const hasAllLikertOptions = likertOptions.every(option =>
+                        options.some(opt => opt.toLowerCase() === option.toLowerCase())
+                      );
+
+                      if (hasAllLikertOptions) {
+                        return likertOptions;
+                      }
+
+                      return options;
+                    })()}
                     name={`q-${current.id}`}
                     value={currentAnswer}
                     onChange={(val: number) => handleAnswer(val)}
