@@ -5,10 +5,16 @@ import Input from "../ui/input/input";
 import Button from "../ui/button/button";
 import InputDropdown from "../ui/dropdown/input-dropdown";
 import LikertScaleInput from "../ui/input/likert-scale-input";
-import { FormState } from "./signup";
 import { Question, Quiz } from "../types";
 import { updateQuiz } from "../../services/quizzes";
 import { useAuthStore } from "../stores/auth-store";
+
+interface QuestionFormState {
+  type: { value: string; error: string };
+  question: { value: string; error: string };
+  options: { value: string[]; error: string };
+  answer: { value: string | number | null; error: string };
+}
 
 interface AddQuestionFormProps {
   onClose: () => void;
@@ -21,7 +27,7 @@ const AddQuestionForm: React.FC<AddQuestionFormProps> = ({
   onClose = () => {},
   chapterId,
   question = {
-    answer: "",
+    answer: null,
     options: [],
     question: "",
     type: "single"
@@ -29,16 +35,16 @@ const AddQuestionForm: React.FC<AddQuestionFormProps> = ({
   quiz,
 }) => {
   const { token } = useAuthStore();
-  const [formState, setFormState] = useState<FormState>({
+  const [formState, setFormState] = useState<QuestionFormState>({
     type: { value: question.type, error: "" },
     question: { value: question.question, error: "" },
     options: { value: question.options, error: "" },
     answer: { value: question.answer, error: "" },
   });
 
-  const updateFormField = <K extends keyof FormState>(
+  const updateFormField = <K extends keyof QuestionFormState>(
     key: K,
-    value: FormState[K]["value"]
+    value: QuestionFormState[K]["value"]
   ) => {
     setFormState((prev) => ({
       ...prev,
@@ -117,11 +123,11 @@ const AddQuestionForm: React.FC<AddQuestionFormProps> = ({
         </label>
         <Input
           id="question"
-          value={question.question}
+          value={formState.question.value}
           required
           inputSize="sm"
           placeholder="Add your question here"
-          onChange={(e) => updateFormField("question", Number(e.target.value))}
+          onChange={(e) => updateFormField("question", e.target.value)}
         />
       </Fieldset>
 
@@ -131,7 +137,7 @@ const AddQuestionForm: React.FC<AddQuestionFormProps> = ({
         {formState.type.value === "likert" ? (
           <LikertScaleInput
             name="likert-response"
-            value={formState.answer.value}
+            value={typeof formState.answer.value === 'number' ? formState.answer.value : undefined}
             onChange={(value) => updateFormField("answer", value)}
           />
         ) : (
@@ -165,13 +171,13 @@ const AddQuestionForm: React.FC<AddQuestionFormProps> = ({
         )}
       </Fieldset>
 
-      {formState.type.value !== "Likert Scale" && (
+      {formState.type.value !== "likert" && (
         <Fieldset className="w-full flex flex-col gap-2">
           <InputDropdown
             visualSize="sm"
             label="Answer"
             options={formState.options.value}
-            value={formState.answer.value}
+            value={formState.answer.value as string}
             onChange={(e) => updateFormField("answer", e.target.value)}
           />
         </Fieldset>

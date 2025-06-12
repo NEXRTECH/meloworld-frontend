@@ -16,7 +16,7 @@ export const StatCard: React.FC<StatCardProps> = ({ title, stat, icon }) => {
         >
             <div className="flex items-start justify-between">
                 <div className="p-3 bg-primary/10 text-primary rounded-lg">
-                    {React.cloneElement(icon as React.ReactElement, { className: "text-2xl" })}
+                    {React.cloneElement(icon as React.ReactElement<{ className?: string }>, { className: "text-2xl" })}
                 </div>
                 {/* Placeholder for a micro-chart */}
                 <div className="w-12 h-8 bg-gray-100 rounded-md"></div>

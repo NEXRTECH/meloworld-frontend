@@ -9,13 +9,14 @@ import Button from "../ui/button/button";
 import Input from "../ui/input/input";
 import { useAuthStore } from "../stores/auth-store";
 import { useToast } from "../hooks/use-toast";
-import { FormState, UserRole } from "../types"; // Assuming types are centralized
+import { UserRole } from "../types"; // Assuming types are centralized
 
 // Services & Icons
 import { loginService } from "../../services/auth";
 import { IoKey, IoMail } from "react-icons/io5";
 import { CgSpinner } from "react-icons/cg";
 import { AnimatePresence, motion } from "framer-motion";
+import { FormState } from "./signup";
 
 interface LoginProps {
   userRole: UserRole;
@@ -52,6 +53,7 @@ const LoginForm: React.FC<LoginProps> = ({ userRole }) => {
         admin: "/admin/dashboard",
         candidate: "/candidate",
         therapist: "/therapist/dashboard",
+        org: "/org/dashboard"
       };
       router.replace(paths[userRole] || "/");
     }

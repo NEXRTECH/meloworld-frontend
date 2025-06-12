@@ -115,7 +115,7 @@ const CandidateSignUpForm: React.FC = () => {
         formState.password.value,
         orgId,
         age,
-        formState.gender.value
+        formState.gender.value as "male" | "female"
       );
 
       if (response.ok) {
@@ -146,34 +146,34 @@ const CandidateSignUpForm: React.FC = () => {
       </div>
 
       <form onSubmit={handleSignup} className="w-full space-y-5 mt-8">
-        <Input name="name" placeholder="Full Name" icon={<IoPerson />} onChange={handleFormChange} value={formState.name.value} error={formState.name.error} />
-        <Input name="email" type="email" placeholder="Email Address" icon={<IoMail />} onChange={handleFormChange} value={formState.email.value} error={formState.email.error} />
+        <Input name="name" placeholder="Full Name" icon={<IoPerson />} onChange={handleFormChange} value={formState.name.value} />
+        <Input name="email" type="email" placeholder="Email Address" icon={<IoMail />} onChange={handleFormChange} value={formState.email.value} />
 
         {/* Responsive Grid for DOB and Gender */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          <Input name="dob" type="date" placeholder="Date of Birth" icon={<IoCalendar />} onChange={handleFormChange} value={formState.dob.value} error={formState.dob.error} />
+          <Input name="dob" type="date" placeholder="Date of Birth" icon={<IoCalendar />} onChange={handleFormChange} value={formState.dob.value} />
           <Select
             placeholder="Select Gender"
             items={[{ label: "Male", value: "male" }, { label: "Female", value: "female" }]}
             value={formState.gender.value}
             onValueChange={(value) => handleSelectChange("gender", value)}
-            error={formState.gender.error}
+            // error={formState.gender.error}
           />
         </div>
 
         {/* Responsive Grid for Passwords */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <Input name="password" type="password" placeholder="Create Password" icon={<IoKey />} onChange={handleFormChange} value={formState.password.value} error={formState.password.error} />
-            <Input name="repassword" type="password" placeholder="Confirm Password" icon={<IoKey />} onChange={handleFormChange} value={formState.repassword.value} error={formState.repassword.error} />
+            <Input name="password" type="password" placeholder="Create Password" icon={<IoKey />} onChange={handleFormChange} value={formState.password.value} />
+            <Input name="repassword" type="password" placeholder="Confirm Password" icon={<IoKey />} onChange={handleFormChange} value={formState.repassword.value}/>
         </div>
 
         <Select
           placeholder={isFetchingOrgs ? "Loading Organizations…" : "Select Organization"}
-          disabled={isFetchingOrgs}
+          // disabled={isFetchingOrgs}
           items={organizations.map(org => ({ label: org.organization_name, value: org.organization_name }))}
           value={formState.org.value}
           onValueChange={(value) => handleSelectChange("org", value)}
-          error={formState.org.error}
+          // error={formState.org.error}
         />
 
         <Button disabled={loading || !isFormValid} type="submit" className="w-full">

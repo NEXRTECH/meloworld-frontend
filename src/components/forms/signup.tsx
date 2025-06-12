@@ -86,10 +86,7 @@ const SignUpForm: React.FC<SignUpProps> = ({ userRole }) => {
             formState.password.value
           );
           break;
-        // Add other roles like 'therapist' here in the future
-        // case "therapist":
-        //   response = await signupService.therapist(...);
-        //   break;
+      
         default:
           toast({ title: "Error", description: `Signup for role '${userRole}' is not supported.`, variant: "error" });
           return; // Exit if role is not handled
@@ -122,13 +119,13 @@ const SignUpForm: React.FC<SignUpProps> = ({ userRole }) => {
       </div>
 
       <form onSubmit={handleSignup} className="w-full space-y-5 mt-8">
-        <Input name="name" placeholder="Full Name" icon={<IoPerson />} onChange={handleFormChange} value={formState.name.value} error={formState.name.error} />
-        <Input name="email" type="email" placeholder="Email Address" icon={<IoMail />} onChange={handleFormChange} value={formState.email.value} error={formState.email.error} />
+        <Input name="name" placeholder="Full Name" icon={<IoPerson />} onChange={handleFormChange} value={formState.name.value} />
+        <Input name="email" type="email" placeholder="Email Address" icon={<IoMail />} onChange={handleFormChange} value={formState.email.value} />
 
         {/* Responsive Grid for Passwords */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <Input name="password" type="password" placeholder="Create Password" icon={<IoKey />} onChange={handleFormChange} value={formState.password.value} error={formState.password.error} />
-            <Input name="repassword" type="password" placeholder="Confirm Password" icon={<IoKey />} onChange={handleFormChange} value={formState.repassword.value} error={formState.repassword.error} />
+            <Input name="password" type="password" placeholder="Create Password" icon={<IoKey />} onChange={handleFormChange} value={formState.password.value}/>
+            <Input name="repassword" type="password" placeholder="Confirm Password" icon={<IoKey />} onChange={handleFormChange} value={formState.repassword.value} />
         </div>
         
         <Button disabled={loading || !isFormValid} type="submit" className="w-full">
@@ -154,9 +151,5 @@ const SignUpForm: React.FC<SignUpProps> = ({ userRole }) => {
     </>
   );
 };
-
-// Note: This implementation assumes your custom <Input /> component can receive
-// and display an 'error' prop. If not, you can use the animated wrapper
-// component pattern from the previous examples to display the error messages.
 
 export default SignUpForm;
