@@ -124,7 +124,7 @@ const AssessmentForm: React.FC = () => {
           inset-0 p-4
           md:inset-auto md:top-1/2 md:left-1/2
           md:-translate-x-1/2 md:-translate-y-1/2
-          md:w-[100vw] md:h-[95vh] md:p-10 md:mt-5
+          md:w-[100vw] md:h-[95vh] mt-4 lg:mt-8 lg:pt-10 pt-18
         `}
       >
         <Button onClick={() => router.push(`/candidate/course/${courseId}`)} size="xs" className="w-fit mb-5">

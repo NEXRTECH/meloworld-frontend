@@ -45,7 +45,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
         animate="visible"
       >
         {/* Animated Logo */}
-        <motion.div className="flex justify-center" variants={logoVariants}>
+        <motion.div className="flex justify-center mt-20" variants={logoVariants}>
           <Image
             src={logo}
             alt="MeloWorld Logo"
@@ -64,7 +64,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
             rounded-xl 
             shadow-lg sm:shadow-xl      // Responsive shadow: slightly less intense on mobile
             p-6 sm:p-8                  // Responsive padding: less on mobile, more on desktop
-            mt-6 mb-20 sm:mt-8                // Responsive margin: less space on mobile
+            mb-20               // Responsive margin: less space on mobile
           "
           variants={cardVariants}
         >

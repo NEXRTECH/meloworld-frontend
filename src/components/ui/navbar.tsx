@@ -95,7 +95,7 @@ const Navbar: React.FC = () => {
         </div>
 
         {/* --- MOBILE NAVBAR --- */}
-        <div className="lg:hidden flex items-center justify-between px-6 py-4">
+        <div className="lg:hidden flex items-center justify-between px-6 py-2">
           <Link href="/">
             <Image src={logo} alt="MeloWorld Logo" width={50} priority />
           </Link>
