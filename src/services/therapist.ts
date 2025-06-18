@@ -53,7 +53,7 @@ export const getAssignedPatientsByTherapistId = async (therapistId: number) => {
 
 export const getAllSessionsByTherapist = async (
   therapistId: number,
-  status?: "Completed" | "Scheduled"
+  status?: "Completed" | "Scheduled" | "In Progress" | "Cancelled"
 ) => {
   const payload = {
     therapist_id: therapistId,

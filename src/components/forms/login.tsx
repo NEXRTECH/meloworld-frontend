@@ -28,7 +28,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const LoginForm: React.FC<LoginProps> = ({ userRole }) => {
   const router = useRouter();
   const { toast } = useToast();
-  const { setAuth, token, hydrated } = useAuthStore();
+  const { setAuth, token, hydrated, metadata } = useAuthStore(s => s);
 
   const [loading, setLoading] = useState(false);
   const [formState, setFormState] = useState<FormState>({
@@ -48,6 +48,9 @@ const LoginForm: React.FC<LoginProps> = ({ userRole }) => {
 
   // Effect to redirect users who are already logged in
   useEffect(() => {
+    if(userRole === "therapist" && metadata?.therapist_id) {
+      router.push("/therapist/dashboard");
+    }
     if (token && hydrated) {
       const paths: Record<UserRole, string> = {
         admin: "/admin/dashboard",
@@ -55,7 +58,7 @@ const LoginForm: React.FC<LoginProps> = ({ userRole }) => {
         therapist: "/therapist/dashboard",
         org: "/org/dashboard"
       };
-      router.replace(paths[userRole] || "/");
+      router.push(paths[userRole] || "/");
     }
   }, [token, userRole, router, hydrated]);
 
@@ -95,13 +98,18 @@ const LoginForm: React.FC<LoginProps> = ({ userRole }) => {
       const response = await loginService[userRole](credentials.email, credentials.password);
 
       if (response.ok) {
-        const { token, name, email } = response.data; // Assuming a consistent success response structure
+        if(userRole === "therapist") {
+          const { therapist_id, therapist_name } = response.data.therapist;
+          setAuth(therapist_id, userRole, { name: therapist_name, therapist_id: therapist_id, email: "" });
+        } else {
+          const { token, name, email } = response.data;
+          setAuth(token, userRole, { name, email });
+        }
         toast({
           title: "Login Successful!",
           description: `Redirecting to ${userRole} dashboard…`,
           variant: "success",
         });
-        setAuth(token, userRole, { name, email });
         // The useEffect will handle the redirection
       } else {
         // Standardized error handling for all roles

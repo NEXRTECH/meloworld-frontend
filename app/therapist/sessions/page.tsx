@@ -28,7 +28,9 @@ import {
   BsInfo,
   BsInfoCircle,
   BsPlus,
+  BsArrowRepeat,
 } from "react-icons/bs";
+import { CgSpinner } from "react-icons/cg";
 import { FaPlus } from "react-icons/fa6";
 
 
@@ -102,6 +104,20 @@ const getPatientDetails = (patientId: number) => {
   return patientData.filter((p) => p.patient_id == patientId)[0];
 };
 
+const formatISODate = (isoString: string) => {
+  const date = new Date(isoString);
+  const year = date.getUTCFullYear();
+  const month = date.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' });
+  const day = date.getUTCDate();
+  const hours = date.getUTCHours();
+  const minutes = date.getUTCMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours % 12 || 12;
+  const displayMinutes = minutes.toString().padStart(2, '0');
+  
+  return `${month} ${day}, ${year}, ${displayHours}:${displayMinutes} ${ampm}`;
+};
+
 const SessionsPage: React.FC = () => {
   const router = useRouter();
   const { fetchSessionsByTherapistId, createSession, updateSession } =
@@ -114,17 +130,31 @@ const SessionsPage: React.FC = () => {
   const { name, therapist_id } = metadata;
   const [newSessionDate, setNewSessionDate] = useState<string>("");
   const [filter, setFilter] = useState<string>("Scheduled");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const { toast } = useToast();
 
   useEffect(() => {
     if (!therapist_id) return;
-    fetchSessionsByTherapistId(therapist_id);
-  }, [therapist_id]);
+    setIsLoading(true);
+    fetchSessionsByTherapistId(therapist_id, filter as "Completed" | "Scheduled" | "In Progress" | "Cancelled")
+      .then(() => {
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching sessions:", error);
+        setIsLoading(false);
+        toast({
+          title: "Error",
+          description: "Failed to fetch sessions.",
+          variant: "error",
+        });
+      });
+  }, [therapist_id, filter]);
 
   useEffect(() => {
     console.log("Sessions updated:", sessions);
-  }, [sessions]);
+  }, [sessions, therapist_id]);
 
   const handleCreateSession = () => {
     if (!newSessionDate) {
@@ -157,9 +187,6 @@ const SessionsPage: React.FC = () => {
 
   return (
     <div className="dashboard-panel relative">
-      <div style={{ textAlign: "center", marginTop: 20 }}>
-        <h1>My WebGL in Next.js</h1>
-      </div>
       <div className="w-full flex justify-between">
         <h1>Your Sessions</h1>
         <Dialog>
@@ -218,39 +245,51 @@ const SessionsPage: React.FC = () => {
             }}
           />
         </div>
-        <Table headings={["Session ID", "Start Time", "End Time", "More"]}>
-          {sessions
-            .filter((s) => s.session_status == filter)
-            .map((session) => {
-              return (
-                <tr
-                  key={session.session_id}
-                  className="hover:bg-gray-100 cursor-pointer"
-                >
-                  <td className="text-sm">{session.session_id}</td>
-                  <td className="text-sm">
-                    {new Date(session.start_time).toLocaleString()}
-                  </td>
-                  <td className="text-sm">
-                    {new Date(session.end_time).toLocaleString()}
-                  </td>
-                  <td className="text-sm">
-                    <Button
-                      size="xs"
-                      variant="outline"
-                      onClick={() => {
-                        router.push(
-                          `/therapist/sessions/${session.session_id}`
-                        );
-                      }}
-                    >
-                      View
-                    </Button>
-                  </td>
-                </tr>
-              );
-            })}
-        </Table>
+        {isLoading ? (
+          <div className="flex justify-center items-center py-8">
+            <CgSpinner className="animate-spin text-sky-900" size={32} />
+          </div>
+        ) : (
+          <Table headings={["Session ID", "Start Time", "End Time", "More"]}>
+            {sessions.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="text-center py-8 text-gray-500">
+                  No {filter.toLowerCase()} sessions found
+                </td>
+              </tr>
+            ) : (
+              sessions.map((session) => {
+                return (
+                  <tr
+                    key={session.session_id}
+                    className="hover:bg-gray-100 cursor-pointer"
+                  >
+                    <td className="text-sm">{session.session_id}</td>
+                    <td className="text-sm">
+                      {formatISODate(session.start_time)}
+                    </td>
+                    <td className="text-sm">
+                      {formatISODate(session.end_time)}
+                    </td>
+                    <td className="text-sm">
+                      <Button
+                        size="xs"
+                        variant="outline"
+                        onClick={() => {
+                          router.push(
+                            `/therapist/sessions/${session.session_id}`
+                          );
+                        }}
+                      >
+                        View
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </Table>
+        )}
       </Card>
     </div>
   );

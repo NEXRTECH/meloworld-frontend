@@ -20,7 +20,7 @@ export interface TherapistStoreState {
   setSessions: (sessions: Session[]) => void;
   fetchSessionsByTherapistId: (
     therapistId: number,
-    status?: "Completed" | "Scheduled"
+    status?: "Completed" | "Scheduled" | "In Progress" | "Cancelled"
   ) => Promise<void>;
   getSession: (sessionId: number) => Promise<void>;
   updateSession: (
@@ -55,9 +55,9 @@ export const useTherapistStore = create<TherapistStoreState>()(
 
         // Sessions actions
         setSessions: (sessions) => set({ sessions: sessions }),
-        fetchSessionsByTherapistId: async (therapistId: number) => {
+        fetchSessionsByTherapistId: async (therapistId: number, status?: "Completed" | "Scheduled" | "In Progress" | "Cancelled") => {
           try {
-            const response = await getAllSessionsByTherapist(therapistId);
+            const response = await getAllSessionsByTherapist(therapistId, status);
             if (response && response.status === 200) {
               const data = await response.data.sessions;
               set({ sessions: data });

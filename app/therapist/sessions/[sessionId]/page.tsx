@@ -25,8 +25,22 @@ import {
 import Input from "@/components/ui/input/input";
 import TextArea from "@/components/ui/textarea/textarea";
 import dynamic from "next/dynamic";
-const SessionPage = () => {
 
+const formatISODate = (isoString: string) => {
+  const date = new Date(isoString);
+  const year = date.getUTCFullYear();
+  const month = date.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' });
+  const day = date.getUTCDate();
+  const hours = date.getUTCHours();
+  const minutes = date.getUTCMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours % 12 || 12;
+  const displayMinutes = minutes.toString().padStart(2, '0');
+  
+  return `${month} ${day}, ${year}, ${displayHours}:${displayMinutes} ${ampm}`;
+};
+
+const SessionPage = () => {
   const router = useRouter();
   const { sessionId } = useParams();
   const { startSession, cancelSession, getSession, updateSession, endSession } =
@@ -176,7 +190,6 @@ const SessionPage = () => {
 
   return (
     <div className="dashboard-panel">
-     
       <Button
         onClick={() => router.push("/therapist/sessions")}
         variant="outline"
@@ -198,21 +211,21 @@ const SessionPage = () => {
               <FiClock size={20} className=" mr-2" />
               <span className="font-semibold  mr-1">Start Time:</span>
               <span className="">
-                {new Date(session.start_time).toLocaleString()}
+                {formatISODate(session.start_time)}
               </span>
             </div>
             <div className="flex items-center">
               <FiClock size={20} className=" mr-2" />
               <span className="font-semibold  mr-1">End Time:</span>
               <span className="">
-                {new Date(session.end_time).toLocaleString()}
+                {formatISODate(session.end_time)}
               </span>
             </div>
             <div className="flex items-center">
               <FiClock size={20} className=" mr-2" />
               <span className="font-semibold  mr-1">Updated At:</span>
               <span className="">
-                {new Date(session.updated_at).toLocaleString()}
+                {formatISODate(session.updated_at)}
               </span>
             </div>
           </Card>
@@ -286,9 +299,12 @@ const SessionPage = () => {
             {session.metadata &&
             session.metadata.waiting &&
             session.metadata.waiting.length > 0 ? (
-              session.metadata.waiting.map((patient, id) => (
-                <Card key={id} className="p-3 bg-white w-full">
-                  <div className="w-full flex lg:flex-row flex-col gap-2 justify-between items-center">
+              <div className="w-full mt-2 flex flex-col gap-5 justify-between items-center">
+                {session.metadata.waiting.map((patient, id) => (
+                  <Card
+                    key={id}
+                    className="p-3 bg-white w-full border  flex flex-row justify-between items-center"
+                  >
                     <div className="flex items-center justify-center gap-2">
                       <BsPersonFill />
                       <p>{patient}</p>
@@ -309,9 +325,9 @@ const SessionPage = () => {
                         <AiOutlineStop /> Deny
                       </Button>
                     </div>
-                  </div>
-                </Card>
-              ))
+                  </Card>
+                ))}
+              </div>
             ) : (
               <p>No patients in the waiting queue.</p>
             )}
@@ -321,16 +337,18 @@ const SessionPage = () => {
               {session.metadata &&
               session.metadata.participants &&
               session.metadata.participants.length > 0 ? (
-                session.metadata.participants.map((patient, id) => (
-                  <Card key={id} className="p-3 bg-white w-full">
-                    <div className="w-full flex lg:flex-row flex-col gap-2 justify-between items-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <BsPersonFill />
-                        <p>{patient}</p>
+                <div className="w-full mt-2 flex flex-col gap-5 justify-between items-center">
+                  {session.metadata.participants.map((patient, id) => (
+                    <Card key={id} className="px-3 py-5 border bg-white w-full">
+                      <div className="w-full flex lg:flex-row flex-col gap-2 justify-between items-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <BsPersonFill />
+                          <p>{patient}</p>
+                        </div>
                       </div>
-                    </div>
-                  </Card>
-                ))
+                    </Card>
+                  ))}
+                </div>
               ) : (
                 <p>No participants in the session.</p>
               )}
