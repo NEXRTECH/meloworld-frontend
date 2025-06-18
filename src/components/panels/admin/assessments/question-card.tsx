@@ -70,7 +70,7 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ quiz, question }) => {
             <div className="w-full h-full mt-14 bg-secondary">
               <AddQuestionForm
                 question={question}
-                chapterId={Number(chapterId)}
+                isEdit={true}
                 quiz={quiz}
                 onClose={() => setShowQuestionForm(false)}
               />
@@ -81,5 +81,5 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ quiz, question }) => {
     </>
   );
 };
-Card;
+
 export default QuestionCard;

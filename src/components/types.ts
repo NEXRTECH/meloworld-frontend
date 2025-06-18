@@ -10,6 +10,18 @@ export type Organization = {
   metadata?: Record<string, any> | null;
 };
 
+export type Norm = {
+  _id: string;
+  normId: number;
+  scale_name: string;
+  gender: string;
+  age_min: number;
+  age_max: number;
+  description: string;
+  norm_thresholds: NormThresholds;
+  interpretations: Interpretations;
+}
+
 export type Course = {
   id: number;
   title: string;
@@ -87,7 +99,7 @@ export type Report = {
 
 export type Quiz = {
   id: number;
-  couse_id: number;
+  course_id: number;
   chapter_id: number;
   title: string;
   description: string;

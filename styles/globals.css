@@ -49,11 +49,33 @@ td {
 }
 
 .dashboard-panel {
-    @apply relative bg-secondary/40 w-full h-full overflow-auto flex flex-col px-10 py-10 flex-nowrap gap-5 items-start justify-start;
+    @apply relative w-full h-full overflow-auto flex flex-col px-10 py-10 flex-nowrap gap-5 items-start justify-start;
 }
 
 .candidate {
     @apply bg-gradient-to-br from-[#ffffff] via-[#ffffff] to-[#efcbab] p-10 md:p-8 lg:py-10 lg:px-20;
+}
+
+/* Line clamp utilities */
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
 }
 
 @keyframes blob {

@@ -1,51 +1,453 @@
 import { create } from "zustand";
 import { persist, devtools } from "zustand/middleware";
-import { Course, Organization, Quiz } from "../types";
-import { updateQuiz } from "@/services/quizzes";
+import {
+  Chapter,
+  Course,
+  Norm,
+  Organization,
+  Question,
+  Quiz,
+  Report,
+  Submission,
+} from "../types";
+import {
+  fetchNorms,
+  getAllQuizzesByChapter,
+  updateQuiz,
+} from "@/services/quizzes";
 import { updateOrganization } from "@/services/organizations";
-import { getAllAssessments } from "@/services/assessments";
+import {
+  getAllAssessments,
+  createAssessment as createAssessmentService,
+} from "@/services/assessments";
+import {
+  getAllQuestionsByQuizId,
+  getAllQuizzesByCourse,
+} from "@/services/quizzes";
+import {
+  fetchCourseReport,
+  fetchSubmissions,
+  submitSingleAnswer,
+} from "@/services/reports";
+import { getAllChapters } from "@/services/chapters";
 
 export interface AdminStoreState {
-  // Add your state properties here
+  // Core data storage
   organizations: Organization[];
-  assessments: Course[];
-  // Define more properties as needed
+  norms: Norm[];
+  courses: Course[];
+  chaptersByCourse: Record<number, Chapter[]>;
+  quizzes: Quiz[]; // quizzes by course ID
+  quizzesByChapter: Record<number, Quiz[]>; // quizzes by chapter ID
+  questions: Record<number, Question[]>; // questions by quiz ID
+  reports: Record<number, Report>; // reports by course ID
+  submissions: Record<number, Submission[]>; // submissions by course ID
 
-  // Add your actions/methods here
+  // Legacy properties for backward compatibility
+  assessments: Course[];
+  quizQuestionsCourseDict: Record<number, Question[]>;
+  submissionCourseDict: Record<number, Submission[]>;
+  courseQuizMetadataDict: Record<number, Quiz[]>;
+
+  // Setters
   setOrganizations: (orgs: Organization[]) => void;
+  setCourses: (courses: Course[]) => void;
+  setChaptersByCourse: (courseId: number, chapters: Chapter[]) => void;
+  setQuizzes: (quizzes: Quiz[]) => void;
+  setQuestions: (quizId: number, questions: Question[]) => void;
+  setReports: (reports: Record<number, Report>) => void;
+  setSubmissions: (courseId: number, submissions: Submission[]) => void;
+  setNorms: (norms: Norm[]) => void;
+  // addQuestionToQuiz: 
+
+  // Legacy setters for backward compatibility
   setAssessments: (assessments: Course[]) => void;
+  setCourseQuizMetadataDict: (courseId: number, quizzes: Quiz[]) => void;
+  setSubmissionCourseDict: (
+    courseId: number,
+    submissions: Submission[]
+  ) => void;
+  setQuizQuestionsCourseDict: (courseId: number, questions: Question[]) => void;
+
+  // Data fetching methods
+  getCourses: (token: string) => Promise<void>;
+  getChaptersByCourse: (token: string, courseId: number) => Promise<void>;
+  getQuizzesByChapter: (token: string, chapterId: number) => Promise<void>;
+  getQuizzesByCourse: (token: string, courseId: number) => Promise<void>;
+  getQuestionsByQuiz: (token: string, quizId: number) => Promise<void>;
+  getReportsByCourse: (token: string, courseId: number) => Promise<void>;
+  getSubmissionsByCourse: (token: string, courseId: number) => Promise<void>;
+  getNorms: (token: string) => Promise<void>;
+
+  // Legacy methods for backward compatibility
   getAssessments: (token: string) => Promise<void>;
+  getQuestionsByCourseId: (token: string, courseId: number) => Promise<void>;
+  getSubmissionsByCourseId: (token: string, courseId: number) => Promise<void>;
+  getCourseReport: (token: string, courseId: number) => Promise<void>;
+  submitAnswer: (
+    token: string,
+    courseId: number,
+    chapterId: number,
+    quizId: number,
+    questionId: number,
+    selectedOption: number,
+    score: number
+  ) => Promise<void>;
+
+  // Assessment management
+  createAssessment: (
+    token: string,
+    assessmentData: { title: string; description?: string }
+  ) => Promise<void>;
+
+  // Organization management
   fetchOrganizations: () => Promise<void>;
   updateOrganization: (
     orgId: number,
     updatedOrg: Partial<Organization>
   ) => Promise<void>;
+
+  // Utility methods
+  clearAdminStore: () => void;
+  getChaptersByCourseIdUtility: (courseId: number) => Chapter[] | undefined;
+  getCourseByIdUtility: (courseId: number) => Course | undefined;
+  getQuizzesByCourseIdUtility: (courseId: number) => Quiz[];
+  getQuestionsByQuizIdUtility: (quizId: number) => Question[];
+  getReportByCourseIdUtility: (courseId: number) => Report | undefined;
+  getSubmissionsByCourseIdUtility: (courseId: number) => Submission[];
 }
 
 export const useAdminStore = create<AdminStoreState>()(
   devtools(
     persist(
-      (set) => ({
-        // Initialize your state
+      (set, get) => ({
+        // Initialize state
         organizations: [],
+        courses: [],
+        chaptersByCourse: {},
+        quizzes: [],
+        quizzesByChapter: {},
+        questions: {},
+        reports: {},
+        submissions: {},
+        norms: [],
+
+        // Legacy state for backward compatibility
         assessments: [],
-        // Define actions
-        setAssessments: (assessments: Course[]) => set({ assessments }),
-        getAssessments: async (token: string) => {
+        quizQuestionsCourseDict: {},
+        submissionCourseDict: {},
+        courseQuizMetadataDict: {},
+
+        // Core setters
+        setOrganizations: (orgs) => set({ organizations: orgs }),
+        setCourses: (courses) => set({ courses }),
+        setChaptersByCourse: (courseId, chapters) =>
+          set((state) => ({
+            chaptersByCourse: { ...state.chaptersByCourse, [courseId]: chapters },
+          })),
+        setQuizzes: (quizzes) =>
+          set((state) => ({
+            quizzes: quizzes,
+          })),
+        setQuizzesByChapter: (chapterId, quizzes) =>
+          set((state) => ({
+            quizzesByChapter: {
+              ...state.quizzesByChapter,
+              [chapterId]: quizzes,
+            },
+          })),
+        setQuestions: (quizId, questions) =>
+          set((state) => ({
+            questions: { ...state.questions, [quizId]: questions },
+          })),
+        setReports: (reports) => set({ reports }),
+        setSubmissions: (courseId, submissions) =>
+          set((state) => ({
+            submissions: { ...state.submissions, [courseId]: submissions },
+          })),
+        setNorms: (norms) => set({ norms }),
+        // Legacy setters for backward compatibility
+        setAssessments: (assessments) => set({ assessments }),
+        setCourseQuizMetadataDict: (courseId, quizzes) =>
+          set((state) => ({
+            courseQuizMetadataDict: {
+              ...state.courseQuizMetadataDict,
+              [courseId]: quizzes,
+            },
+          })),
+        setSubmissionCourseDict: (courseId, submissions) =>
+          set((state) => ({
+            submissionCourseDict: {
+              ...state.submissionCourseDict,
+              [courseId]: submissions,
+            },
+          })),
+        setQuizQuestionsCourseDict: (courseId, questions) =>
+          set((state) => ({
+            quizQuestionsCourseDict: {
+              ...state.quizQuestionsCourseDict,
+              [courseId]: questions,
+            },
+          })),
+
+        // Core data fetching methods
+        getCourses: async (token: string) => {
           try {
             const response = await getAllAssessments(token);
             if (response.ok) {
               const data = await response.json();
-              const assessments: Quiz[] = data.courses ?? [];
-              console.debug("Fetched assessments:", assessments);
-              set({ assessments });
+              const courses: Course[] = data.courses ?? [];
+              console.debug("Fetched courses:", courses);
+              set({ courses, assessments: courses }); // Keep legacy assessments in sync
             }
           } catch (error) {
-            console.error("Error fetching assessments:", error);
+            console.error("Error fetching courses:", error);
             throw error;
           }
         },
-        setOrganizations: (orgs) => set({ organizations: orgs }),
+
+        getChaptersByCourse: async (token: string, courseId: number) => {
+          try {
+            const response = await getAllChapters(token, courseId);
+            if (response.ok) {
+              const data = await response.json();
+              const chapters: Chapter[] = data.chapters ?? [];
+              console.debug("Fetched chapters for course ID", courseId, ":", chapters);
+              // append to existing chapters
+              set((state) => ({
+                chaptersByCourse: {
+                  ...state.chaptersByCourse,
+                  [courseId]: chapters,
+                },
+              }));
+            }
+          } catch (error) {
+            console.error("Error fetching chapters by course:", error);
+            throw error;
+          }
+        },
+
+        getQuizzesByChapter: async (token: string, chapterId: number) => {
+          try {
+            const response = await getAllQuizzesByChapter(token, chapterId);
+            if (response.ok) {
+              const data = await response.json();
+              const quizzes: Quiz[] = data.quizzes ?? [];
+              console.debug(
+                "Fetched quizzes for chapter ID",
+                chapterId,
+                ":",
+                quizzes
+              );
+              set((state) => ({
+                quizzesByChapter: {
+                  ...state.quizzesByChapter,
+                  [chapterId]: quizzes,
+                },
+              }));
+            }
+          } catch (error) {
+            console.error("Error fetching quizzes by chapter:", error);
+            throw error;
+          }
+        },
+
+        getQuizzesByCourse: async (token: string, courseId: number) => {
+          try {
+            const response = await getAllQuizzesByCourse(token, courseId);
+            if (response.ok) {
+              const data = await response.json();
+              const quizzes: Quiz[] = data.quizzes ?? [];
+              console.debug(
+                "Fetched quizzes for course ID",
+                courseId,
+                ":",
+                quizzes
+              );
+
+              set((state) => ({
+                quizzes: quizzes,
+                courseQuizMetadataDict: {
+                  ...state.courseQuizMetadataDict,
+                  [courseId]: quizzes,
+                },
+              }));
+            }
+          } catch (error) {
+            console.error("Error fetching quizzes by course:", error);
+            throw error;
+          }
+        },
+        getQuestionsByQuiz: async (token: string, quizId: number) => {
+          try {
+            const response = await getAllQuestionsByQuizId(token, quizId);
+            if (response.ok) {
+              const data = await response.json();
+              const questions: Question[] = (data.questions ?? []).map(
+                (question: Question) => ({
+                  ...question,
+                  quiz_id: quizId,
+                })
+              );
+              console.debug(
+                "Fetched questions for quiz ID",
+                quizId,
+                ":",
+                questions
+              );
+
+              set((state) => ({
+                questions: { ...state.questions, [quizId]: questions },
+              }));
+            }
+          } catch (error) {
+            console.error("Error fetching questions by quiz:", error);
+            throw error;
+          }
+        },
+        getReportsByCourse: async (token: string, courseId: number) => {
+          try {
+            const response = await fetchCourseReport(token, courseId);
+            if (response.ok) {
+              const data = await response.json();
+              const report: Report = data ?? {};
+              console.debug(
+                "Fetched report for course ID",
+                courseId,
+                ":",
+                report
+              );
+
+              set((state) => ({
+                reports: { ...state.reports, [courseId]: report },
+              }));
+            }
+          } catch (error) {
+            console.error("Error fetching report by course:", error);
+            throw error;
+          }
+        },
+        getSubmissionsByCourse: async (token: string, courseId: number) => {
+          try {
+            const response = await fetchSubmissions(token, courseId);
+            if (response.ok) {
+              const data = await response.json();
+              const submissions: Submission[] = data.submissions ?? [];
+              console.debug(
+                "Fetched submissions for course ID",
+                courseId,
+                ":",
+                submissions
+              );
+
+              set((state) => ({
+                submissions: { ...state.submissions, [courseId]: submissions },
+                submissionCourseDict: {
+                  ...state.submissionCourseDict,
+                  [courseId]: submissions,
+                },
+              }));
+            }
+          } catch (error) {
+            console.error("Error fetching submissions by course:", error);
+          }
+        },
+        getNorms: async (token: string) => {
+          try {
+            const response = await fetchNorms(token);
+            if (response.ok) {
+              const data = await response.json();
+              const norms: Norm[] = data.norms ?? [];
+              console.debug("Fetched norms:", norms);
+              set({ norms });
+            }
+          } catch (error) {
+            console.error("Error fetching norms:", error);
+            throw error;
+          }
+        },
+        // Legacy methods for backward compatibility
+        getAssessments: async (token: string) => {
+          const { getCourses } = get();
+          await getCourses(token);
+        },
+        getQuestionsByCourseId: async (token: string, courseId: number) => {
+          try {
+            const { getQuizzesByCourse } = get();
+            await getQuizzesByCourse(token, courseId);
+
+            // Get questions for each quiz
+            const state = get();
+            const quizzes =
+              state.quizzes.filter((quiz) => quiz.course_id === courseId) || [];
+
+            for (const quiz of quizzes) {
+              await state.getQuestionsByQuiz(token, quiz.id);
+            }
+          } catch (error) {
+            console.error("Error fetching questions by course ID:", error);
+            throw error;
+          }
+        },
+
+        getSubmissionsByCourseId: async (token: string, courseId: number) => {
+          const { getSubmissionsByCourse } = get();
+          await getSubmissionsByCourse(token, courseId);
+        },
+        getCourseReport: async (token: string, courseId: number) => {
+          const { getReportsByCourse } = get();
+          await getReportsByCourse(token, courseId);
+        },
+        submitAnswer: async (
+          token: string,
+          courseId: number,
+          chapterId: number,
+          quizId: number,
+          questionId: number,
+          selectedOption: number,
+          score: number
+        ) => {
+          try {
+            const response = await submitSingleAnswer(
+              token,
+              courseId,
+              chapterId,
+              quizId,
+              questionId,
+              selectedOption,
+              score
+            );
+            if (response.status === 201) {
+              console.log("Answer stored!");
+            } else if (response.status >= 400 && response.status < 500) {
+              throw new Error("Experienced a client error");
+            }
+          } catch (error) {
+            console.error("Error submitting answer:", error);
+            throw error;
+          }
+        },
+
+        // Assessment management
+        createAssessment: async (token, assessmentData) => {
+          try {
+            const response = await createAssessmentService(token, assessmentData);
+            if (response.ok) {
+              // Refetch assessments to update the list
+              get().getAssessments(token);
+            } else {
+              // Handle non-ok responses
+              const errorData = await response.json();
+              console.error("Failed to create assessment:", errorData);
+              throw new Error(errorData.message || "Failed to create assessment");
+            }
+          } catch (error) {
+            console.error("Error creating assessment:", error);
+            throw error;
+          }
+        },
+
+        // Organization management
         fetchOrganizations: async () => {
           // TODO: Replace with a real API call to fetch organizations
           const dummyData: Organization[] = [
@@ -94,6 +496,45 @@ export const useAdminStore = create<AdminStoreState>()(
           } catch (error) {
             console.error("Error updating organization:", error);
           }
+        },
+
+        // Utility methods
+        clearAdminStore: () =>
+          set(() => ({
+            organizations: [],
+            courses: [],
+            quizzes: [],
+            questions: {},
+            reports: {},
+            submissions: {},
+            assessments: [],
+            quizQuestionsCourseDict: {},
+            courseQuizMetadataDict: {},
+            submissionCourseDict: {},
+          })),
+        getChaptersByCourseIdUtility: (courseId: number) => {
+          const state = get();
+          return state.chaptersByCourse[courseId];
+        },
+        getCourseByIdUtility: (courseId: number) => {
+          const state = get();
+          return state.courses.find((course) => course.id === courseId);
+        },
+        getQuizzesByCourseIdUtility: (courseId: number) => {
+          const state = get();
+          return state.quizzes.filter((quiz) => quiz.course_id === courseId);
+        },
+        getQuestionsByQuizIdUtility: (quizId: number) => {
+          const state = get();
+          return state.questions[quizId] || [];
+        },
+        getReportByCourseIdUtility: (courseId: number) => {
+          const state = get();
+          return state.reports[courseId];
+        },
+        getSubmissionsByCourseIdUtility: (courseId: number) => {
+          const state = get();
+          return state.submissions[courseId] || [];
         },
       }),
       {

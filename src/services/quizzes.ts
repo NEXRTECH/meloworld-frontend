@@ -1,6 +1,7 @@
 import { retryFetch } from "@/lib/utils";
 
 const QUIZ_HOST = process.env.NEXT_PUBLIC_AWS_QUIZ_HOST;
+const REPORTS_HOST = process.env.NEXT_PUBLIC_AWS_REPORTS_HOST;
 
 export const getAllQuizzesByChapter = async (
   token: string,
@@ -87,6 +88,19 @@ export const updateQuiz = async (
     body: body,
   };
 
+  const response = await retryFetch(url, options);
+  return response;
+}
+
+export const fetchNorms = async (token: string) => {
+  const url = `https://${REPORTS_HOST}/default/quizSubmission?action=getAllNorms`;
+  const options = {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+  };
   const response = await retryFetch(url, options);
   return response;
 }

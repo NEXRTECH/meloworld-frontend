@@ -16,3 +16,24 @@ export const getAllAssessments = async (token: string) => {
   const response = await retryFetch(url, options);
   return response;
 };
+
+export const createAssessment = async (
+  token: string,
+  assessmentData: { title: string; description?: string }
+) => {
+  const url = `https://${ASSESSMENT_HOST}/default/psychometricCourse/course`;
+  const options = {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      action: "createCourse",
+      ...assessmentData,
+    }),
+  };
+
+  const response = await retryFetch(url, options);
+  return response;
+};

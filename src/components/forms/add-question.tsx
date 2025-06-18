@@ -16,16 +16,18 @@ interface QuestionFormState {
   answer: { value: string | number | null; error: string };
 }
 
-interface AddQuestionFormProps {
+interface AddEditQuestionFormProps {
+  isEdit?: boolean;
   onClose: () => void;
-  chapterId?: number;
+  quizId?: number;
   quiz?: Quiz;
   question?: Question;
 }
 
-const AddQuestionForm: React.FC<AddQuestionFormProps> = ({
+const AddEditQuestionForm: React.FC<AddEditQuestionFormProps> = ({
+  isEdit = false,
   onClose = () => {},
-  chapterId,
+  quizId,
   question = {
     answer: null,
     options: [],
@@ -73,31 +75,7 @@ const AddQuestionForm: React.FC<AddQuestionFormProps> = ({
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // your submit logic here
-    // if (quiz && token) {
-    //   const payload = {
-    //     chapter_id: chapterId,
-    //     quiz_id: quiz.id,
-    //     questions: [
-    //       ...quiz.questions,
-    //       {
-    //         question: formState["question"].value,
-    //         options: formState["options"].value,
-    //         answer: formState["answer"].value,
-    //       },
-    //     ],
-    //   };
-
-    //   const response = await updateQuiz(token, JSON.stringify(payload));
-
-    //   if(response.ok) {
-    //     alert("Question added successfully!");
-    //     onClose();
-    //   } else {
-    //     alert("Question couldn't be added :(");
-    //     console.error(response.body);
-    //   }
-    // }
+    
   };
 
   if(question.type) {
@@ -185,7 +163,7 @@ const AddQuestionForm: React.FC<AddQuestionFormProps> = ({
 
       <div className="flex gap-2 items-center">
         <Button className="w-fit" type="submit" size="xs">
-          Add
+          {isEdit ? "Edit" : "Add"}
         </Button>
         <Button type="button" onClick={onClose} variant="outline" size="xs">
           Cancel
@@ -195,4 +173,4 @@ const AddQuestionForm: React.FC<AddQuestionFormProps> = ({
   );
 };
 
-export default AddQuestionForm;
+export default AddEditQuestionForm;

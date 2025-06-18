@@ -9,7 +9,7 @@ import Input from "@/components/ui/input/input";
 import Table from "@/components/ui/table/table";
 import React, { useEffect, useState } from "react";
 import { FaSearch } from "react-icons/fa";
-import { FaFilter, FaSort } from "react-icons/fa6";
+import { FaFilter, FaPlus, FaSort } from "react-icons/fa6";
 
 const AssessmentsHome: React.FC = () => {
   const token = useAuthStore((state) => state.token);
@@ -32,6 +32,10 @@ const AssessmentsHome: React.FC = () => {
             icon={<FaSearch />}
           />
           <div className="flex gap-2">
+          <Button variant="outline" size="xs" className="flex gap-2">
+              <FaPlus />
+              <p className="hidden lg:block">Create</p>
+            </Button>
             <Button variant="outline" size="xs" className="flex gap-2">
               <FaSort />
               <p className="hidden lg:block">Sort</p>
