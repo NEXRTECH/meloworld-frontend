@@ -10,7 +10,7 @@ const VRPage: React.FC = () => {
     <div className="dashboard-panel">
         <h1>Your VR Session</h1>
       <div className="w-full h-full rounded-xl">
-        <UnityPlayer />
+        <iframe src="https://mello-vr-web-gl-application.vercel.app/" className="w-full h-full"></iframe>
       </div>
     </div>
   );

@@ -9,6 +9,20 @@ import React, { useEffect, useState } from "react";
 import { BsCheck2Circle } from "react-icons/bs";
 import { IoPeople } from "react-icons/io5";
 
+const formatISODate = (isoString: string) => {
+  const date = new Date(isoString);
+  const year = date.getUTCFullYear();
+  const month = date.toLocaleString('en-US', { month: 'short', timeZone: 'UTC' });
+  const day = date.getUTCDate();
+  const hours = date.getUTCHours();
+  const minutes = date.getUTCMinutes();
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  const displayHours = hours % 12 || 12;
+  const displayMinutes = minutes.toString().padStart(2, '0');
+  
+  return `${month} ${day}, ${year}, ${displayHours}:${displayMinutes} ${ampm}`;
+};
+
 const sessionData = [
   {
     session_id: 1,
@@ -175,8 +189,8 @@ const TherapistHome = () => {
                         : ""}
                     </td>
 
-                    <td>{new Date(s.start_time).toLocaleString()}</td>
-                    <td>{new Date(s.end_time).toLocaleString()}</td>
+                    <td>{formatISODate(s.start_time)}</td>
+                    <td>{formatISODate(s.end_time)}</td>
                   </tr>
                 ))}
             </Table>
@@ -196,8 +210,8 @@ const TherapistHome = () => {
                         ? patients[s.patient_id].first_name
                         : ""}
                     </td>
-                    <td>{new Date(s.start_time).toLocaleString()}</td>
-                    <td>{new Date(s.end_time).toLocaleString()}</td>
+                    <td>{formatISODate(s.start_time)}</td>
+                    <td>{formatISODate(s.end_time)}</td>
                     <td>{s.metadata.completion_feedback}</td>
                   </tr>
                 ))}
