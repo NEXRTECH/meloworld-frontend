@@ -1,3 +1,4 @@
+import { Chapter } from "@/components/types";
 import { retryFetch } from "@/lib/utils";
 
 const CHAPTERS_HOST = process.env.NEXT_PUBLIC_AWS_CHAPTER_HOST;
@@ -35,3 +36,35 @@ export const getChapterById = async (
   const response = await retryFetch(url, options);
   return response;
 };
+
+export const updateChapterOnServer = async (token: string, chapterId: number, courseId: number, updatedChapter: Partial<Chapter>) => {
+  const url = `https://${CHAPTERS_HOST}/default/psychometricChapter/chapter?action=updateChapter`;
+  const options = {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ course_id: courseId, chapter_id: chapterId, ...updatedChapter }),
+  };
+
+  console.log(options.body)
+
+  const response = await retryFetch(url, options);
+  return response;
+}
+
+export const createChapter = async (token: string, { course_id, title, chapter_order, image, description, norm_id }: { course_id: number, title: string, chapter_order: number, image: string, description: string, norm_id: number }) => {
+  const url = `https://${CHAPTERS_HOST}/default/psychometricChapter/chapter?action=createChapter`;
+  const options = {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ course_id, title, chapter_order, image, description, norm_id }),
+  };
+
+  const response = await retryFetch(url, options);
+  return response;
+}

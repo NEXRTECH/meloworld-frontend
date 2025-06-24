@@ -135,7 +135,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ menuItems = [], tit
       </motion.aside>
 
       {/* --- MOBILE HEADER & MENU --- */}
-      <header className="lg:hidden fixed top-0 w-full bg-white/80 backdrop-blur-md border-b z-30 flex items-center justify-between px-4 h-16">
+      <header className="lg:hidden fixed top-0 w-full bg-white backdrop-blur-md border-b z-30 flex items-center justify-between px-4 h-16">
         <Image src={logoTransparent} alt="Logo" width={32} height={32} />
         <button onClick={() => setIsMobileMenuOpen(true)} className="p-2">
             <TbMenu2 size={24} />
@@ -148,7 +148,7 @@ const DashboardSidebar: React.FC<DashboardSidebarProps> = ({ menuItems = [], tit
                 animate={{ x: 0 }}
                 exit={{ x: '-100%' }}
                 transition={{ duration: 0.3, ease: 'easeInOut' }}
-                className="lg:hidden fixed inset-0 w-3/4 h-screen bg-white border-r z-50 p-4 flex flex-col"
+                className="lg:hidden fixed inset-0 w-3/4 h-screen bg-secondary border-r z-50 p-4 flex flex-col"
             >
                  <div className="flex items-center justify-between mb-8">
                      <h2 className="font-bold text-lg">{title} Portal</h2>

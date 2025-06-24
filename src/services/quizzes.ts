@@ -1,3 +1,4 @@
+import { Question } from "@/components/types";
 import { retryFetch } from "@/lib/utils";
 
 const QUIZ_HOST = process.env.NEXT_PUBLIC_AWS_QUIZ_HOST;
@@ -104,3 +105,37 @@ export const fetchNorms = async (token: string) => {
   const response = await retryFetch(url, options);
   return response;
 }
+
+export const createQuiz = async (
+  token: string,
+  quizData: { chapter_id: number; course_id: number; title: string; description: string; image: string }
+) => {
+  const url = `https://${QUIZ_HOST}/default/psychometricQuiz?action=createQuiz`;
+  const options = {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(quizData),
+  };
+  const response = await retryFetch(url, options);
+  return response;
+};
+
+export const createQuestion = async (
+  token: string,
+  questionData: Partial<Question>
+) => {
+  const url = `https://${QUIZ_HOST}/default/psychometricQuiz?action=addQuestion`;
+  const options = {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(questionData),
+  };
+  const response = await retryFetch(url, options);
+  return response;
+};

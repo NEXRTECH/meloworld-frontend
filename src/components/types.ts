@@ -35,6 +35,7 @@ export type Chapter = {
   id: number;
   course_id: number;
   title: string;
+  image?: string;
   description: string;
   chapter_order: number;
   created_at: string;
@@ -45,10 +46,11 @@ export type Question = {
   id: number;
   question: string;
   type: "single" | "multiple" | "likert";
-  options: string[];
+  options: string[] | Record<number, string>;
   answer: string | null;
   created_at: string;
   quiz_id?: number;
+  chapter_id?: number;
 };
 
 export type Submission = {

@@ -6,7 +6,7 @@ const TextArea: React.FC<TextAreaProps> = (props) => {
     return (
         <textarea
             {...props}
-            className={`rounded-xl p-3 focus:outline-none focus:ring-2 focus:ring-primary ${props.className || ''}`}
+            className={`rounded-xl text-sm p-3 border focus:outline-none focus:ring-2 focus:ring-primary ${props.className || ''}`}
         />
     );
 };

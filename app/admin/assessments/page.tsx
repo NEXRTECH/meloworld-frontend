@@ -10,21 +10,29 @@ import Table from "@/components/ui/table/table";
 import React, { useEffect, useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { FaFilter, FaPlus, FaSort } from "react-icons/fa6";
+import { Dialog, DialogTrigger, DialogContent, DialogTitle } from "@/components/ui/dialog/dialog";
+import AddCourseForm from "@/components/forms/add-course";
 
 const AssessmentsHome: React.FC = () => {
   const token = useAuthStore((state) => state.token);
   const assessments = useAdminStore((s) => s.assessments);
-  const { getAssessments } = useAdminStore();
+  const norms = useAdminStore((s) => s.norms);
+  const { getAssessments, getNorms } = useAdminStore();
+  const [open, setOpen] = useState(false);
+
   useEffect(() => {
-    if (token) getAssessments(token);
+    if (token){
+      getAssessments(token);
+      getNorms(token);
+    };
   }, []);
 
   return (
     <div className="dashboard-panel">
       <h1>Assessments</h1>
 
-      <Card className="flex flex-col gap-10 w-full h-full p-10 bg-white/60">
-        <div className="flex w-full justify-between items-center">
+      <Card className="flex flex-col gap-10 w-full h-full p-5 bg-white/60">
+        <div className="flex flex-col lg:flex-row w-full justify-between items-start gap-5 lg:gap-0 lg:items-center">
           <Input
             inputSize="sm"
             textSize="xs"
@@ -32,10 +40,18 @@ const AssessmentsHome: React.FC = () => {
             icon={<FaSearch />}
           />
           <div className="flex gap-2">
-          <Button variant="outline" size="xs" className="flex gap-2">
-              <FaPlus />
-              <p className="hidden lg:block">Create</p>
-            </Button>
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="xs" className="flex gap-2">
+                  <FaPlus />
+                  <p className="hidden lg:block">Create</p>
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogTitle>Create Assessment</DialogTitle>
+                <AddCourseForm norms={norms} onClose={() => setOpen(false)} />
+              </DialogContent>
+            </Dialog>
             <Button variant="outline" size="xs" className="flex gap-2">
               <FaSort />
               <p className="hidden lg:block">Sort</p>

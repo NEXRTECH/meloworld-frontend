@@ -1,7 +1,17 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { FaAngleLeft, FaPlus, FaChevronLeft, FaChevronRight, FaPenToSquare, FaFloppyDisk, FaXmark, FaChevronDown, FaChevronUp } from "react-icons/fa6";
+import {
+  FaAngleLeft,
+  FaPlus,
+  FaChevronLeft,
+  FaChevronRight,
+  FaPenToSquare,
+  FaFloppyDisk,
+  FaXmark,
+  FaChevronDown,
+  FaChevronUp,
+} from "react-icons/fa6";
 import { CgSpinner } from "react-icons/cg";
 import { AnimatePresence, motion } from "framer-motion";
 import { useAuthStore } from "@/components/stores/auth-store";
@@ -15,19 +25,30 @@ import AddQuestionForm from "@/components/forms/add-question";
 import { useParams, useRouter } from "next/navigation";
 import { useAdminStore } from "@/components/stores/admin-store";
 import AddEditQuestionForm from "@/components/forms/add-question";
+import AddQuizForm from "@/components/forms/add-quiz";
 
 const ChapterPanel: React.FC = () => {
   const router = useRouter();
   const token = useAuthStore((state) => state.token);
   const { assessmentId, chapterId } = useParams();
-  const { getQuizzesByCourse, getQuestionsByQuiz } = useAdminStore();
+  const {
+    getQuizzesByCourse,
+    getQuestionsByQuiz,
+    updateChapter,
+    getChaptersByCourse,
+    updateQuiz,
+  } = useAdminStore();
   const chapterByCourse = useAdminStore((state) => state.chaptersByCourse);
   const quizzes = useAdminStore((state) => state.quizzes);
-  const chapterQuizzes = quizzes.filter(q => q.chapter_id === Number(chapterId));
+  const chapterQuizzes = quizzes.filter(
+    (q) => q.chapter_id === Number(chapterId)
+  );
   const questions = useAdminStore((state) => state.questions);
-  
-  const chapter = chapterByCourse[Number(assessmentId)]?.find(ch => ch.id === Number(chapterId));
-  
+
+  const chapter = chapterByCourse[Number(assessmentId)]?.find(
+    (ch) => ch.id === Number(chapterId)
+  );
+
   const [showQuestionForm, setShowQuestionForm] = useState<{
     active: boolean;
     isEdit?: boolean;
@@ -36,24 +57,36 @@ const ChapterPanel: React.FC = () => {
     active: false,
     isEdit: false,
   });
-  
+
   // Quiz dropdown state
-  const [currentQuestionIndices, setCurrentQuestionIndices] = useState<Record<number, number>>({});
-  
+  const [currentQuestionIndices, setCurrentQuestionIndices] = useState<
+    Record<number, number>
+  >({});
+
   // Loading state for quizzes
   const [isLoadingQuizzes, setIsLoadingQuizzes] = useState(false);
-  
+
   // Editable state management for chapter
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [isEditingDescription, setIsEditingDescription] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
   const [editedDescription, setEditedDescription] = useState("");
 
+  const [isEditingQuizDescription, setIsEditingQuizDescription] = useState<
+    Record<number, boolean>
+  >({});
+  const [editedQuizDescriptions, setEditedQuizDescriptions] = useState<
+    Record<number, string>
+  >({});
+
+  const [showQuizForm, setShowQuizForm] = useState(false);
+
   useEffect(() => {
     if (token && assessmentId) {
       setIsLoadingQuizzes(true);
-      getQuizzesByCourse(token, Number(assessmentId))
-        .finally(() => setIsLoadingQuizzes(false));
+      getQuizzesByCourse(token, Number(assessmentId)).finally(() =>
+        setIsLoadingQuizzes(false)
+      );
     }
   }, [token, assessmentId, getQuizzesByCourse]);
 
@@ -68,7 +101,7 @@ const ChapterPanel: React.FC = () => {
   // Load questions for each quiz when quizzes are loaded
   useEffect(() => {
     if (token && quizzes.length > 0) {
-      quizzes.forEach(quiz => {
+      quizzes.forEach((quiz) => {
         getQuestionsByQuiz(token, quiz.id);
       });
     }
@@ -77,22 +110,22 @@ const ChapterPanel: React.FC = () => {
   const handleNextQuestion = (quizId: number) => {
     const quizQuestions = questions[quizId] || [];
     const currentIndex = currentQuestionIndices[quizId] || 0;
-    
+
     if (currentIndex < quizQuestions.length - 1) {
-      setCurrentQuestionIndices(prev => ({
+      setCurrentQuestionIndices((prev) => ({
         ...prev,
-        [quizId]: currentIndex + 1
+        [quizId]: currentIndex + 1,
       }));
     }
   };
 
   const handlePreviousQuestion = (quizId: number) => {
     const currentIndex = currentQuestionIndices[quizId] || 0;
-    
+
     if (currentIndex > 0) {
-      setCurrentQuestionIndices(prev => ({
+      setCurrentQuestionIndices((prev) => ({
         ...prev,
-        [quizId]: currentIndex - 1
+        [quizId]: currentIndex - 1,
       }));
     }
   };
@@ -102,9 +135,14 @@ const ChapterPanel: React.FC = () => {
     setIsEditingTitle(true);
   };
 
-  const handleTitleBlur = () => {
-    // TODO: Integrate with store to save the title
-    console.log("Saving title:", editedTitle);
+  const handleTitleBlur = async () => {
+    if (token) {
+      await updateChapter(token, Number(chapterId), Number(assessmentId), {
+        title: editedTitle,
+      });
+      // Refetch chapters for the course
+      await getChaptersByCourse(token, Number(assessmentId));
+    }
     setIsEditingTitle(false);
   };
 
@@ -114,9 +152,29 @@ const ChapterPanel: React.FC = () => {
   };
 
   const handleDescriptionBlur = () => {
-    // TODO: Integrate with store to save the description
-    console.log("Saving description:", editedDescription);
+    if (token) {
+      updateChapter(token, Number(chapterId), Number(assessmentId), {
+        description: editedDescription,
+      });
+    }
     setIsEditingDescription(false);
+  };
+
+  const handleQuizDescriptionClick = (quizId: number, description: string) => {
+    setIsEditingQuizDescription((prev) => ({ ...prev, [quizId]: true }));
+    setEditedQuizDescriptions((prev) => ({
+      ...prev,
+      [quizId]: description || "",
+    }));
+  };
+
+  const handleQuizUpdate = (quizId: number) => {
+    const newDescription = editedQuizDescriptions[quizId];
+    if (!token) return;
+    // Here you would typically call an update service
+    updateQuiz(token, quizId, { description: newDescription }).finally(() => {
+      setIsEditingQuizDescription((prev) => ({ ...prev, [quizId]: false }));
+    });
   };
 
   // Show loading state if chapter is not loaded yet
@@ -134,8 +192,12 @@ const ChapterPanel: React.FC = () => {
         <div className="flex items-center justify-center w-full h-64">
           <div className="text-center">
             <p>Loading chapter...</p>
-            <p className="text-sm text-gray-500">Assessment ID: {assessmentId}, Chapter ID: {chapterId}</p>
-            <p className="text-sm text-gray-500">Token: {token ? "Present" : "Missing"}</p>
+            <p className="text-sm text-gray-500">
+              Assessment ID: {assessmentId}, Chapter ID: {chapterId}
+            </p>
+            <p className="text-sm text-gray-500">
+              Token: {token ? "Present" : "Missing"}
+            </p>
           </div>
         </div>
       </div>
@@ -152,7 +214,7 @@ const ChapterPanel: React.FC = () => {
         <FaAngleLeft />
         <p className="mt-0.5">Back</p>
       </Button>
-      
+
       {/* Editable Title Section */}
       <div className="w-full">
         <div className="group relative">
@@ -166,7 +228,7 @@ const ChapterPanel: React.FC = () => {
               autoFocus
             />
           ) : (
-            <div 
+            <div
               onClick={handleTitleClick}
               className="group cursor-pointer hover:bg-gray-50 rounded px-2 py-1 -ml-2 transition-colors duration-200 flex items-center gap-2"
             >
@@ -202,11 +264,13 @@ const ChapterPanel: React.FC = () => {
               autoFocus
             />
           ) : (
-            <div 
+            <div
               onClick={handleDescriptionClick}
               className="group cursor-pointer hover:bg-gray-50 rounded px-2 py-1 -ml-2 transition-colors duration-200 flex items-start gap-2"
             >
-              <p className="text-sm flex-1">{chapter?.description || "No description"}</p>
+              <p className="text-sm flex-1">
+                {chapter?.description || "No description"}
+              </p>
               <FaPenToSquare className="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-sm mt-0.5 flex-shrink-0" />
             </div>
           )}
@@ -214,10 +278,20 @@ const ChapterPanel: React.FC = () => {
       </div>
 
       <div className="h-0.5 w-full bg-secondary" />
-      
+
       {/* Quizzes Section */}
       <div className="relative w-full flex-col flex gap-2">
         <h2>Quizzes</h2>
+        {/* Add Quiz Button */}
+        <div className="flex justify-end w-full mb-2">
+          <Button
+            onClick={() => setShowQuizForm(true)}
+            size="xs"
+            className="flex gap-2 items-center"
+          >
+            <FaPlus /> Add Quiz
+          </Button>
+        </div>
         <div className="flex flex-col gap-4 items-center justify-center w-full">
           {isLoadingQuizzes ? (
             <div className="flex flex-col gap-3 items-center justify-center w-full text-center py-8">
@@ -228,32 +302,74 @@ const ChapterPanel: React.FC = () => {
             <div className="w-full max-w-4xl space-y-4">
               {chapterQuizzes.map((quiz) => {
                 const quizQuestions = questions[quiz.id] || [];
-                const currentQuestionIndex = currentQuestionIndices[quiz.id] || 0;
-                
+                const currentQuestionIndex =
+                  currentQuestionIndices[quiz.id] || 0;
+
                 return (
-                  <Dropdown key={quiz.id} title={`${quiz.title} (${quizQuestions.length} questions)`}>
+                  <Dropdown
+                    key={quiz.id}
+                    title={`${quiz.title} (${quizQuestions.length} questions)`}
+                  >
                     <div className="flex items-center gap-2 mb-4">
                       <Button
-                        onClick={() => setShowQuestionForm({ active: true, isEdit: false, quiz: quiz })}
+                        onClick={() =>
+                          setShowQuestionForm({
+                            active: true,
+                            isEdit: false,
+                            quiz: quiz,
+                          })
+                        }
                         size="xs"
                         className="flex gap-2 items-center"
                       >
                         <FaPlus /> Add Question
                       </Button>
                     </div>
-                    
+
                     <div className="p-4">
-                      <p className="text-sm text-gray-600 mb-4">{quiz.description || "No description"}</p>
-                      
+                      <div className="group relative mb-4">
+                        {isEditingQuizDescription[quiz.id] ? (
+                          <textarea
+                            value={editedQuizDescriptions[quiz.id]}
+                            onChange={(e) =>
+                              setEditedQuizDescriptions((prev) => ({
+                                ...prev,
+                                [quiz.id]: e.target.value,
+                              }))
+                            }
+                            onBlur={() => handleQuizUpdate(quiz.id)}
+                            className="text-sm bg-white border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500 w-full min-h-[60px] resize-y"
+                            placeholder="Enter quiz description..."
+                            autoFocus
+                          />
+                        ) : (
+                          <div
+                            onClick={() =>
+                              handleQuizDescriptionClick(
+                                quiz.id,
+                                quiz.description || ""
+                              )
+                            }
+                            className="group cursor-pointer hover:bg-gray-50 rounded px-2 py-1 -ml-2 transition-colors duration-200 flex items-start gap-2"
+                          >
+                            <p className="text-sm text-gray-600 flex-1">
+                              {quiz.description || "No description"}
+                            </p>
+                            <FaPenToSquare className="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity duration-200 text-sm mt-0.5 flex-shrink-0" />
+                          </div>
+                        )}
+                      </div>
+
                       {quizQuestions.length > 0 ? (
                         <div className="space-y-4">
                           {/* Question Counter */}
                           <div className="flex justify-center">
                             <p className="text-sm text-gray-600">
-                              Question {currentQuestionIndex + 1} of {quizQuestions.length}
+                              Question {currentQuestionIndex + 1} of{" "}
+                              {quizQuestions.length}
                             </p>
                           </div>
-                          
+
                           {/* Question Display */}
                           <div className="relative">
                             <AnimatePresence mode="wait">
@@ -262,13 +378,19 @@ const ChapterPanel: React.FC = () => {
                                 initial={{ opacity: 0, x: 100 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -100 }}
-                                transition={{ duration: 0.3, ease: "easeInOut" }}
+                                transition={{
+                                  duration: 0.3,
+                                  ease: "easeInOut",
+                                }}
                                 className="w-full"
                               >
-                                <QuestionCard quiz={quiz} question={quizQuestions[currentQuestionIndex]} />
+                                <QuestionCard
+                                  quiz={quiz}
+                                  question={quizQuestions[currentQuestionIndex]}
+                                />
                               </motion.div>
                             </AnimatePresence>
-                            
+
                             {/* Navigation Buttons */}
                             <div className="flex justify-between items-center mt-6">
                               <Button
@@ -281,10 +403,13 @@ const ChapterPanel: React.FC = () => {
                                 <FaChevronLeft />
                                 Previous
                               </Button>
-                              
+
                               <Button
                                 onClick={() => handleNextQuestion(quiz.id)}
-                                disabled={currentQuestionIndex === quizQuestions.length - 1}
+                                disabled={
+                                  currentQuestionIndex ===
+                                  quizQuestions.length - 1
+                                }
                                 size="sm"
                                 className="flex gap-2 items-center"
                                 variant="outline"
@@ -293,16 +418,18 @@ const ChapterPanel: React.FC = () => {
                                 <FaChevronRight />
                               </Button>
                             </div>
-                            
+
                             {/* Question Dots Indicator */}
                             <div className="flex justify-center mt-4 gap-2">
                               {quizQuestions.map((_, index) => (
                                 <button
                                   key={index}
-                                  onClick={() => setCurrentQuestionIndices(prev => ({
-                                    ...prev,
-                                    [quiz.id]: index
-                                  }))}
+                                  onClick={() =>
+                                    setCurrentQuestionIndices((prev) => ({
+                                      ...prev,
+                                      [quiz.id]: index,
+                                    }))
+                                  }
                                   className={`w-2 h-2 rounded-full transition-all duration-200 ${
                                     index === currentQuestionIndex
                                       ? "bg-sky-900 scale-110"
@@ -315,9 +442,17 @@ const ChapterPanel: React.FC = () => {
                         </div>
                       ) : (
                         <div className="flex flex-col gap-3 items-center justify-center text-center py-8">
-                          <p className="text-gray-500">No questions added yet</p>
+                          <p className="text-gray-500">
+                            No questions added yet
+                          </p>
                           <Button
-                            onClick={() => setShowQuestionForm({ active: true, isEdit: false, quiz: quiz })}
+                            onClick={() =>
+                              setShowQuestionForm({
+                                active: true,
+                                isEdit: false,
+                                quiz: quiz,
+                              })
+                            }
                             size="xs"
                             className="flex gap-2 items-center"
                           >
@@ -333,18 +468,11 @@ const ChapterPanel: React.FC = () => {
           ) : (
             <div className="flex flex-col gap-3 items-center justify-center w-full text-center py-8">
               <p className="text-gray-500">No quizzes added yet</p>
-              <Button
-                onClick={() => setShowQuestionForm({ active: true, isEdit: false })}
-                size="xs"
-                className="flex gap-2 items-center"
-              >
-                <FaPlus /> Add Quiz
-              </Button>
             </div>
           )}
         </div>
       </div>
-      
+
       <AnimatePresence>
         {showQuestionForm.active && (
           <motion.div
@@ -361,9 +489,38 @@ const ChapterPanel: React.FC = () => {
               <AddEditQuestionForm
                 quizId={showQuestionForm.quiz?.id || 0}
                 quiz={showQuestionForm.quiz}
-                onClose={() => setShowQuestionForm({ active: false, isEdit: false })}
+                onClose={() =>
+                  setShowQuestionForm({ active: false, isEdit: false })
+                }
                 isEdit={showQuestionForm.isEdit}
-                />
+              />
+            </div>
+          </motion.div>
+        )}
+        {/* Add Quiz Modal */}
+        {showQuizForm && (
+          <motion.div
+            initial={{ opacity: 0, x: "100%" }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, ease: "backInOut" }}
+            exit={{ x: "100%", opacity: 0 }}
+            className="fixed p-10 right-0 top-0 h-full w-full lg:w-1/2 bg-secondary shadow-xl z-50"
+          >
+            <div className="absolute top-0 left-0 text-sky-900 py-5 px-12 w-full flex justify-between items-center">
+              <h1>Add Quiz</h1>
+              <button
+                onClick={() => setShowQuizForm(false)}
+                className="text-2xl"
+              >
+                <FaXmark />
+              </button>
+            </div>
+            <div className="w-full h-full mt-14 flex items-center justify-center">
+              <AddQuizForm
+                chapterId={Number(chapterId)}
+                courseId={Number(assessmentId)}
+                onClose={() => setShowQuizForm(false)}
+              />
             </div>
           </motion.div>
         )}

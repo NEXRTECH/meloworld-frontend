@@ -29,7 +29,7 @@ const AdminDashboardPage: React.FC = () => {
   const metadata = useAuthStore((state) => state.metadata);
 
   return (
-    <div className="flex flex-col gap-8 p-10">
+    <div className="flex flex-col gap-8 p-10 mt-10 lg:mt-0">
       {/* --- HEADER --- */}
       <div className="flex w-full justify-between items-center">
         <div>
@@ -41,7 +41,7 @@ const AdminDashboardPage: React.FC = () => {
             Here's an overview of your command center.
           </p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="hidden lg:flex items-center gap-4">
           <Button>
             <FiPlus className="mr-2" />
             New Assessment

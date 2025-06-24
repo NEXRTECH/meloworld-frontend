@@ -17,11 +17,9 @@ export const getAllAssessments = async (token: string) => {
   return response;
 };
 
-export const createAssessment = async (
-  token: string,
-  assessmentData: { title: string; description?: string }
+export const createCourse = async (token: string, courseData: { title: string; description?: string, image: string, norm_id: number }
 ) => {
-  const url = `https://${ASSESSMENT_HOST}/default/psychometricCourse/course`;
+  const url = `https://${ASSESSMENT_HOST}/default/psychometricCourse/course?action=createCourse`;
   const options = {
     method: "POST",
     headers: {
@@ -29,11 +27,26 @@ export const createAssessment = async (
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      action: "createCourse",
-      ...assessmentData,
+      ...courseData,
     }),
   };
+  console.debug(options.body);
+  const response = await retryFetch(url, options);
+  return response;
+};
 
+export const deleteCourse = async (token: string, courseId: number) => {
+  const url = `https://${ASSESSMENT_HOST}/default/psychometricCourse/course?action=deleteCourse`;
+  const options = {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      course_id: courseId,
+    }),
+  };
   const response = await retryFetch(url, options);
   return response;
 };

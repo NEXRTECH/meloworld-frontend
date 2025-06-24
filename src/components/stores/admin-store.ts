@@ -14,11 +14,14 @@ import {
   fetchNorms,
   getAllQuizzesByChapter,
   updateQuiz,
+  createQuiz as createQuizService,
+  createQuestion,
 } from "@/services/quizzes";
 import { updateOrganization } from "@/services/organizations";
 import {
   getAllAssessments,
-  createAssessment as createAssessmentService,
+  createCourse as createCourseService,
+  deleteCourse as deleteCourseService,
 } from "@/services/assessments";
 import {
   getAllQuestionsByQuizId,
@@ -29,7 +32,7 @@ import {
   fetchSubmissions,
   submitSingleAnswer,
 } from "@/services/reports";
-import { getAllChapters } from "@/services/chapters";
+import { getAllChapters, updateChapterOnServer, createChapter as createChapterService } from "@/services/chapters";
 
 export interface AdminStoreState {
   // Core data storage
@@ -95,18 +98,22 @@ export interface AdminStoreState {
   ) => Promise<void>;
 
   // Assessment management
-  createAssessment: (
+  createCourse: (
     token: string,
-    assessmentData: { title: string; description?: string }
+    courseData: { title: string; description?: string, image: string, normId: number }
   ) => Promise<void>;
+  deleteCourse: (token: string, courseId: number) => Promise<void>;
 
+  updateChapter: (token: string, chapterId: number, courseId: number, updatedChapter: Partial<Chapter>) => Promise<void>;
+  createChapter: (token: string, chapter: { course_id: number, title: string, chapter_order: number, image: string, description: string, norm_id: number }) => Promise<void>;
   // Organization management
   fetchOrganizations: () => Promise<void>;
   updateOrganization: (
     orgId: number,
     updatedOrg: Partial<Organization>
   ) => Promise<void>;
-
+  updateQuestion: (token: string, questionId: number, updatedQuestion: Partial<Question>) => Promise<void>;
+  createQuestion: (token: string, question: Partial<Question>) => Promise<void>;
   // Utility methods
   clearAdminStore: () => void;
   getChaptersByCourseIdUtility: (courseId: number) => Chapter[] | undefined;
@@ -115,6 +122,12 @@ export interface AdminStoreState {
   getQuestionsByQuizIdUtility: (quizId: number) => Question[];
   getReportByCourseIdUtility: (courseId: number) => Report | undefined;
   getSubmissionsByCourseIdUtility: (courseId: number) => Submission[];
+
+  createQuiz: (
+    token: string,
+    quizData: { chapter_id: number; course_id: number; title: string; description: string; image: string; norm_id: number }
+  ) => Promise<void>;
+  updateQuiz: (token: string, quizId: number, updatedQuiz: Partial<Quiz>) => Promise<void>;
 }
 
 export const useAdminStore = create<AdminStoreState>()(
@@ -166,6 +179,65 @@ export const useAdminStore = create<AdminStoreState>()(
             submissions: { ...state.submissions, [courseId]: submissions },
           })),
         setNorms: (norms) => set({ norms }),
+        updateChapter: async (token, chapterId, courseId, updatedChapter) => {
+          try {
+            const response = await updateChapterOnServer(token, chapterId, courseId, updatedChapter);
+            if (response.ok) {
+              const data = await response.json();
+              const chapter: Chapter = data.chapter;
+              set((state) => ({
+                chaptersByCourse: {
+                  ...state.chaptersByCourse,
+                  [courseId]: state.chaptersByCourse[courseId].map((chapter) => chapter.id === chapterId ? chapter : chapter),
+                },
+              }));
+              console.debug("Updated chapter:", data);
+            }
+          } catch (error) {
+            console.error("Error updating chapter:", error);
+          }
+        },
+        createChapter: async (token, { course_id, title, chapter_order, image, description, norm_id }) => {
+          try {
+            const response = await createChapterService(token, { course_id: course_id, title, chapter_order, image, description, norm_id });
+            if (response.ok) {
+              const data = await response.json();
+              const chapter: Chapter = data.chapter ?? {};
+              get().getChaptersByCourse(token, course_id);
+            }
+          } catch (error) {
+            console.error("Error creating chapter:", error);
+            throw error;
+          }
+        },
+        updateQuestion: async (token, questionId, updatedQuestion) => {
+          console.log({ token, questionId, updatedQuestion });
+        },
+        createQuestion: async (token, question) => {
+          if(!question.quiz_id) {
+            throw new Error("Quiz ID is required");
+            return;
+          }
+          try {
+            const response = await createQuestion(token, question);
+            if (response.ok) {
+              const data = await response.json();
+              const question: Question = data.question ?? {};
+              get().getQuestionsByQuiz(token, question.quiz_id!);
+            }
+          } catch (error) {
+            console.error("Error creating question:", error);
+            throw error;
+          }
+        },
+        updateQuiz: async (token, quizId, updatedQuiz) => {
+          try {
+            console.log({ token, quizId, updatedQuiz });
+          } catch (error) {
+            console.error("Error updating quiz:", error);
+            throw error;
+          }
+        },
         // Legacy setters for backward compatibility
         setAssessments: (assessments) => set({ assessments }),
         setCourseQuizMetadataDict: (courseId, quizzes) =>
@@ -429,9 +501,9 @@ export const useAdminStore = create<AdminStoreState>()(
         },
 
         // Assessment management
-        createAssessment: async (token, assessmentData) => {
+        createCourse: async (token, { title, description, image, normId }) => {
           try {
-            const response = await createAssessmentService(token, assessmentData);
+            const response = await createCourseService(token, { title, description, image, norm_id:normId });
             if (response.ok) {
               // Refetch assessments to update the list
               get().getAssessments(token);
@@ -443,6 +515,20 @@ export const useAdminStore = create<AdminStoreState>()(
             }
           } catch (error) {
             console.error("Error creating assessment:", error);
+            throw error;
+          }
+        },
+        deleteCourse: async (token, courseId) => {
+          try {
+            const response = await deleteCourseService(token, courseId);
+            if (response.ok) {
+              // Refetch assessments to update the list
+              get().getAssessments(token);
+            } else {
+              throw new Error("Failed to delete assessment");
+            }
+          } catch (error) {
+            console.error("Error deleting assessment:", error);
             throw error;
           }
         },
@@ -535,6 +621,24 @@ export const useAdminStore = create<AdminStoreState>()(
         getSubmissionsByCourseIdUtility: (courseId: number) => {
           const state = get();
           return state.submissions[courseId] || [];
+        },
+
+        createQuiz: async (token, quizData) => {
+          try {
+            const response = await createQuizService(token, quizData);
+            if (response.ok) {
+              const data = await response.json();
+              // Optionally refresh quizzes for the chapter
+              if (quizData.chapter_id) {
+                await get().getQuizzesByChapter(token, quizData.chapter_id);
+              }
+            } else {
+              throw new Error('Failed to create quiz');
+            }
+          } catch (error) {
+            console.error('Error creating quiz:', error);
+            throw error;
+          }
         },
       }),
       {
