@@ -33,7 +33,10 @@ const QuestionCard: React.FC<QuestionCardProps> = ({ quiz, question }) => {
           {question.type == "single" && (
             <div className="flex flex-col w-full gap-3">
               <p className="font-semibold">Options</p>
-              {question.options.map((op, id) => (
+              {(Array.isArray(question.options)
+                ? question.options
+                : Object.values(question.options)
+              ).map((op, id) => (
                 <p
                   key={id}
                   className="border-2 border-secondary rounded-xl hover:bg-secondary transition duration-150 ease-in-out hover:text-sky-900 text-center p-2 w-full"
