@@ -6,6 +6,8 @@ interface ButtonProps extends ComponentPropsWithoutRef<typeof motion.button> {
   primaryColor?: string;
   secondaryColor?: string;
   variant?: "filled" | "outline";
+  icon?: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 const sizeMap: Record<NonNullable<ButtonProps["size"]>, string> = {
@@ -22,6 +24,8 @@ const Button: React.FC<ButtonProps> = ({
   secondaryColor = "#ffffff",
   variant = "filled",
   disabled,
+  icon,
+  children,
   ...props
 }) => {
   const isOutline = variant === "outline";
@@ -81,7 +85,10 @@ const Button: React.FC<ButtonProps> = ({
         ${className}
       `}
       {...props}
-    />
+    >
+      {icon && <span className="mr-2">{icon}</span>}
+      {children}
+    </motion.button>
   );
 };
 

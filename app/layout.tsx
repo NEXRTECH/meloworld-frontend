@@ -5,7 +5,7 @@ import { ToastProvider } from '@/components/hooks/use-toast';
 import Footer from '@/components/ui/footer';
 
 export const metadata = {
-  title: 'Meloworld',
+  title: 'NEXR Technology',
 };
 
 export default function RootLayout({
@@ -16,7 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="icon" href="/logo-transparent.png" />
+        <link rel="icon" href="/nexr-white.png" />
       </head>
       <body>
         <ToastProvider>
