@@ -526,13 +526,13 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <Button
-                onClick={() => router.push("/auth/therapist/login")}
                 size="sm"
                 primaryColor="white"
                 secondaryColor="#024a70"
                 variant="outline"
               >
-                Request a Demo
+                <a href="mailto:info@wellbe.club">Request a Demo</a>
+                
               </Button>
             </motion.div>
           </div>

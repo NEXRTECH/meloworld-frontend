@@ -66,9 +66,9 @@ const Navbar: React.FC = () => {
       // Default items for logged-out users
       setNavbarItems([
         { name: "Home", link: "/" },
-        { name: "About", link: "/" },
-        { name: "Services", link: "/" },
-        { name: "Contact", link: "/" },
+        { name: "About", link: "#" },
+        { name: "Services", link: "#" },
+        { name: "Contact", link: "#" },
       ]);
     }
   }, [userRole, token]);
