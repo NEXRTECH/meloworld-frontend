@@ -34,7 +34,7 @@ const Navbar: React.FC = () => {
       setNavbarItems([
         { name: "Home", link: "/" },
         { name: "About", link: "/about" },
-        { name: "Services", link: "/services" },
+        { name: "Services", link: "#" },
         { name: "Contact", link: "/contact" },
       ]);
     }
