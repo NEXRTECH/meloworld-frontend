@@ -180,7 +180,7 @@ const ChapterPanel: React.FC = () => {
   // Show loading state if chapter is not loaded yet
   if (!chapter) {
     return (
-      <div className="dashboard-panel relative h-full w-full flex flex-col gap-5 items-start justify-start">
+      <div className="relative h-full w-full flex flex-col gap-5 items-start justify-start">
         <Button
           onClick={() => router.push("/admin/assessments")}
           size="xs"

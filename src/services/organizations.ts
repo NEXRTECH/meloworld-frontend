@@ -24,6 +24,17 @@ export const updateOrganization = async (
   return response;
 };
 
+export const getAllOrganizations = async () => {
+  const response = await signAndRequest(
+    "GET",
+    {},
+    ORG_HOST,
+    "/default/orgHandlerAPI?action=getAllOrganizations",
+  );
+
+  return response;
+};
+
 export const getOrganizationById = async (orgId: number) => {
   const payload = {
     organization_id: orgId,

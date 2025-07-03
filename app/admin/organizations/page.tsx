@@ -15,6 +15,28 @@ import {
 import { getAllAssessments } from "@/services/assessments";
 import { Switch } from "@headlessui/react";
 import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      duration: 0.5,
+    },
+  },
+};
 
 const OrganizationPanel = () => {
   const token = useAuthStore((s) => s.token);
@@ -46,97 +68,141 @@ const OrganizationPanel = () => {
     }));
   };
 
-  const headings = ["Name", "Type", "Approve", "Status"];
+  const headings = [
+    "Company Name",
+    "Industry Type",
+    "Account Approved",
+    "Platform Access",
+  ];
 
   return (
-    <div className="dashboard-panel">
-      <div className="flex flex-col gap-4">
-        <h1>Organization</h1>
-        <Tabs defaultValue="orgs">
-          <TabsList>
-            <TabsTrigger value="orgs" className="flex-1">
-              Organizations
-            </TabsTrigger>
-            <TabsTrigger value="scales" className="flex-1">
-              Assign Scales
-            </TabsTrigger>
-          </TabsList>
+    <motion.div
+      className="dashboard-panel p-4 mt-10 lg:mt-0 sm:p-6 lg:p-10"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto">
+        <motion.div className="flex flex-col" variants={itemVariants}>
+          <h1 className="text-2xl sm:text-3xl font-bold">
+            Organization Management
+          </h1>
+          <p className="text-sm mt-1">
+            Manage company profiles, approve new partners, and assign assessment
+            scales.
+          </p>
+        </motion.div>
+        <motion.div variants={itemVariants}>
+          <Tabs defaultValue="orgs" className="w-full">
+            <TabsList className="flex-wrap h-auto">
+              <TabsTrigger value="orgs" className="flex-1 sm:flex-none">
+                Organizations
+              </TabsTrigger>
+              <TabsTrigger value="scales" className="flex-1 sm:flex-none">
+                Assign Scales
+              </TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="scales">
-            <Card className="p-5 bg-white/60 flex flex-col gap-5">
-              <h2>Assign Scales</h2>
-              <Table headings={["Name", "Scales"]}>
-                {organizations.map((org) => (
-                  <tr key={org.organization_id}>
-                    <td>{org.organization_name}</td>
-                    <td>
-                      <MultiSelect
-                        selected={selectedScales[org.organization_id] || []}
-                        onChange={(values) => handleScaleChange(org.organization_id, values)}
-                        placeholder="Select Scales"
-                        items={
-                          scales?.map((s) => ({
-                            value: s.title.toLowerCase(),
-                            label: s.title,
-                          })) || []
-                        }
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </Table>
-            </Card>
-          </TabsContent>
-          <TabsContent value="orgs">
-            <Card className="flex bg-white/60 flex-col items-start gap-5 p-5 justify-start w-full h-96">
-              <div className="flex w-full justify-between items-center">
-                <h2>Organizations</h2>
-              </div>
-              <Table headings={headings}>
-                {organizations.map((row, rowIdx) => (
-                  <tr key={rowIdx}>
-                    <td>{row["organization_name"]}</td>
-                    <td>{row["organization_type"]}</td>
-                    <td>
-                      <Switch
-                        checked={row["is_approved"]}
-                        onChange={(value) => {
-                          updateOrganization(row.organization_id, {
-                            is_approved: value,
-                          });
-                        }}
-                        className="group flex h-7 w-14 cursor-pointer rounded-full bg-secondary p-1 transition-colors duration-200 ease-in-out focus:outline-none data-[focus]:outline-1 data-[focus]:outline-white data-[checked]:bg-primary/60"
+            <TabsContent value="scales" className="mt-4">
+              <Card className="p-4 sm:p-6 bg-white/60 flex flex-col gap-5">
+                <div className="flex flex-col">
+                  <h2 className="text-xl font-semibold">
+                    Assign Assessments to Organizations
+                  </h2>
+                  <p className="text-sm mt-1">
+                    Select an organization to assign or unassign psychological
+                    assessment scales.
+                  </p>
+                </div>
+                <div className="overflow-x-auto">
+                  <Table headings={["Company Name", "Available Assessments"]}>
+                    {organizations.map((org) => (
+                      <motion.tr
+                        key={org.organization_id}
+                        variants={itemVariants}
                       >
-                        <span
-                          aria-hidden="true"
-                          className="pointer-events-none inline-block size-5 translate-x-0 rounded-full bg-sky-900 ring-0 shadow-lg transition duration-200 ease-in-out group-data-[checked]:translate-x-7"
-                        />
-                      </Switch>
-                    </td>
-                    <td>
-                      <Switch
-                        checked={row["is_enabled"]}
-                        onChange={(value) => {
-                          updateOrganization(row.organization_id, {
-                            is_enabled: value,
-                          });
-                        }}
-                        className="group flex h-7 w-14 cursor-pointer rounded-full bg-secondary p-1 transition-colors duration-200 ease-in-out focus:outline-none data-[focus]:outline-1 data-[focus]:outline-white data-[checked]:bg-primary/60"
+                        <td className="w-1/3">{org.organization_name}</td>
+                        <td className="w-2/3">
+                          <MultiSelect
+                            selected={selectedScales[org.organization_id] || []}
+                            onChange={(values) =>
+                              handleScaleChange(org.organization_id, values)
+                            }
+                            placeholder="Select Scales"
+                            items={
+                              scales?.map((s) => ({
+                                value: s.title.toLowerCase(),
+                                label: s.title,
+                              })) || []
+                            }
+                          />
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </Table>
+                </div>
+              </Card>
+            </TabsContent>
+            <TabsContent value="orgs" className="mt-4">
+              <Card className="flex bg-white/60 flex-col items-start gap-5 p-4 sm:p-6 justify-start w-full min-h-96">
+                <div className="flex w-full justify-between items-start flex-col">
+                  <h2 className="text-xl font-semibold">All Organizations</h2>
+                  <p className="text-sm mt-1">
+                    Here you can view all registered organizations and manage
+                    their platform access.
+                  </p>
+                </div>
+                <div className="overflow-x-auto w-full">
+                  <Table headings={headings}>
+                    {organizations.map((row, rowIdx) => (
+                      <motion.tr
+                        key={rowIdx}
+                        variants={itemVariants}
                       >
-                        <span
-                          aria-hidden="true"
-                          className="pointer-events-none inline-block size-5 translate-x-0 rounded-full bg-sky-900 ring-0 shadow-lg transition duration-200 ease-in-out group-data-[checked]:translate-x-7"
-                        />
-                      </Switch>
-                    </td>
-                  </tr>
-                ))}
-              </Table>
-            </Card>
-          </TabsContent>
-        </Tabs>
+                        <td>{row["organization_name"]}</td>
+                        <td>{row["organization_type"]}</td>
+                        <td>
+                          <Switch
+                            checked={row["is_approved"]}
+                            onChange={(value) => {
+                              updateOrganization(row.organization_id, {
+                                is_approved: value,
+                              });
+                            }}
+                            className="group flex h-7 w-14 cursor-pointer rounded-full bg-secondary p-1 transition-colors duration-200 ease-in-out focus:outline-none data-[focus]:outline-1 data-[focus]:outline-white data-[checked]:bg-primary/60"
+                          >
+                            <span
+                              aria-hidden="true"
+                              className="pointer-events-none inline-block size-5 translate-x-0 rounded-full bg-sky-900 ring-0 shadow-lg transition duration-200 ease-in-out group-data-[checked]:translate-x-7"
+                            />
+                          </Switch>
+                        </td>
+                        <td>
+                          <Switch
+                            checked={row["is_enabled"]}
+                            onChange={(value) => {
+                              updateOrganization(row.organization_id, {
+                                is_enabled: value,
+                              });
+                            }}
+                            className="group flex h-7 w-14 cursor-pointer rounded-full bg-secondary p-1 transition-colors duration-200 ease-in-out focus:outline-none data-[focus]:outline-1 data-[focus]:outline-white data-[checked]:bg-primary/60"
+                          >
+                            <span
+                              aria-hidden="true"
+                              className="pointer-events-none inline-block size-5 translate-x-0 rounded-full bg-sky-900 ring-0 shadow-lg transition duration-200 ease-in-out group-data-[checked]:translate-x-7"
+                            />
+                          </Switch>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </Table>
+                </div>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

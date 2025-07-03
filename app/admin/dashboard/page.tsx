@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { PiBuildingApartmentFill } from "react-icons/pi";
 import { IoPeople, IoNotifications } from "react-icons/io5";
 import { FaWpforms } from "react-icons/fa";
@@ -17,16 +17,20 @@ import ReportsTable from "@/components/panels/admin/home/reports-table";
 import EmailsTable from "@/components/panels/admin/home/emails-table";
 import { StatCard } from "@/components/ui/card/stat-card";
 import { DashboardPanel } from "@/components/ui/dashboard-panel";
+import { useAdminStore } from "@/components/stores/admin-store";
 
-const stats = [
-  { title: "Organizations", stat: 19, icon: <PiBuildingApartmentFill /> },
-  { title: "Total Candidates", stat: 3242, icon: <IoPeople /> },
-  { title: "Assessments Completed", stat: 2567, icon: <FaWpforms /> },
-  { title: "Reports Generated", stat: 1895, icon: <FaWpforms /> },
-];
+
 
 const AdminDashboardPage: React.FC = () => {
   const metadata = useAuthStore((state) => state.metadata);
+  const organizations = useAdminStore((state) => state.organizations);
+
+  const [stats, setStats] = useState<{ title: string; stat: number; icon: React.ReactNode }[]>([
+    { title: "Organizations", stat: organizations.length, icon: <PiBuildingApartmentFill /> },
+    { title: "Total Candidates", stat: 3242, icon: <IoPeople /> },
+    { title: "Assessments Completed", stat: 2567, icon: <FaWpforms /> },
+    { title: "Reports Generated", stat: 1895, icon: <FaWpforms /> },
+  ]);
 
   return (
     <div className="flex flex-col gap-8 p-10 mt-10 lg:mt-0">
