@@ -28,11 +28,11 @@ const LikertScaleInput: React.FC<LikertScaleInputProps> = ({
   }));
 
   return (
-    <div className="w-full flex justify-between items-center gap-4">
+    <div className="w-full flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
       {scaleOptions.map((option) => (
         <label
           key={option.value}
-          className="flex flex-col items-center text-center text-xs font-medium"
+          className="flex flex-row sm:flex-col items-center text-left sm:text-center text-xs font-medium gap-2 sm:gap-0 w-full sm:w-full"
         >
           <input
             type="radio"
@@ -45,11 +45,10 @@ const LikertScaleInput: React.FC<LikertScaleInputProps> = ({
             className="sr-only"
           />
           <div
-            className={`
-              w-5 h-5 rounded-full border-2
-              transition-all cursor-pointer
-              ${value === option.value ? "scale-110" : "opacity-60 hover:opacity-100"}
-            `}
+            className={
+              `w-5 h-5 rounded-full border-2 mb-0 sm:mb-1 transition-all cursor-pointer ` +
+              (value === option.value ? "scale-110" : "opacity-60 hover:opacity-100")
+            }
             style={{
               borderColor: option.color,
               backgroundColor:
@@ -57,7 +56,7 @@ const LikertScaleInput: React.FC<LikertScaleInputProps> = ({
             }}
             onClick={() => onChange?.(option.value)}
           />
-          <span className="mt-1 max-w-24">{option.label}</span>
+          <span className="sm:mt-1 max-w-24 text-left sm:text-center">{option.label}</span>
         </label>
       ))}
     </div>
