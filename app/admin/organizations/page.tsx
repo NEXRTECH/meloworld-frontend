@@ -16,6 +16,7 @@ import { getAllAssessments } from "@/services/assessments";
 import { Switch } from "@headlessui/react";
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import Button from "@/components/ui/button/button";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -40,32 +41,16 @@ const itemVariants = {
 
 const OrganizationPanel = () => {
   const token = useAuthStore((s) => s.token);
-  const [scales, setScales] = useState<Course[]>();
+  const [isLoadingScales, setIsLoadingScales] = useState(false);
   const [selectedScales, setSelectedScales] = useState<
     Record<number, string[]>
   >({});
 
-  const { organizations, updateOrganization } = useAdminStore((state) => state);
-
-  useEffect(() => {
-    const fetchScales = async () => {
-      if (token) {
-        const response = await getAllAssessments(token);
-        if (response.ok) {
-          const data = await response.json();
-          setScales(data["courses"]);
-        }
-      }
-    };
-
-    fetchScales();
-  }, []);
+  const { updateOrganization } = useAdminStore((state) => state);
+  const organizations = useAdminStore(s => s.organizations)
+  const courses = useAdminStore(s => s.courses)
 
   const handleScaleChange = (orgId: number, values: string[]) => {
-    setSelectedScales((prev) => ({
-      ...prev,
-      [orgId]: values,
-    }));
   };
 
   const headings = [
@@ -105,6 +90,7 @@ const OrganizationPanel = () => {
 
             <TabsContent value="scales" className="mt-4">
               <Card className="p-4 sm:p-6 bg-white/60 flex flex-col gap-5">
+              
                 <div className="flex flex-col">
                   <h2 className="text-xl font-semibold">
                     Assign Assessments to Organizations
@@ -115,31 +101,35 @@ const OrganizationPanel = () => {
                   </p>
                 </div>
                 <div className="overflow-x-auto">
-                  <Table headings={["Company Name", "Available Assessments"]}>
-                    {organizations.map((org) => (
-                      <motion.tr
-                        key={org.organization_id}
-                        variants={itemVariants}
-                      >
-                        <td className="w-1/3">{org.organization_name}</td>
-                        <td className="w-2/3">
-                          <MultiSelect
-                            selected={selectedScales[org.organization_id] || []}
-                            onChange={(values) =>
-                              handleScaleChange(org.organization_id, values)
-                            }
-                            placeholder="Select Scales"
-                            items={
-                              scales?.map((s) => ({
-                                value: s.title.toLowerCase(),
-                                label: s.title,
-                              })) || []
-                            }
-                          />
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </Table>
+                  {isLoadingScales ? (
+                    <div className="flex justify-center items-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                      <span className="ml-2">Loading assessments...</span>
+                    </div>
+                  ) : (
+                    <Table headings={["Company Name", "Available Assessments"]}>
+                      {organizations.map((org) => (
+                        <tr key={org.organization_id}>
+                          <td className="w-1/3">{org.organization_name}</td>
+                          <td className="w-2/3">
+                            <MultiSelect
+                              selected={selectedScales[org.organization_id] || []}
+                              onChange={(values) =>
+                                handleScaleChange(org.organization_id, values)
+                              }
+                              placeholder="Select Scales"
+                              items={
+                                courses?.map((s) => ({
+                                  value: s.title.toLowerCase(),
+                                  label: s.title,
+                                })) || []
+                              }
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </Table>
+                  )}
                 </div>
               </Card>
             </TabsContent>
@@ -155,10 +145,7 @@ const OrganizationPanel = () => {
                 <div className="overflow-x-auto w-full">
                   <Table headings={headings}>
                     {organizations.map((row, rowIdx) => (
-                      <motion.tr
-                        key={rowIdx}
-                        variants={itemVariants}
-                      >
+                      <tr key={rowIdx}>
                         <td>{row["organization_name"]}</td>
                         <td>{row["organization_type"]}</td>
                         <td>
@@ -193,7 +180,7 @@ const OrganizationPanel = () => {
                             />
                           </Switch>
                         </td>
-                      </motion.tr>
+                      </tr>
                     ))}
                   </Table>
                 </div>
