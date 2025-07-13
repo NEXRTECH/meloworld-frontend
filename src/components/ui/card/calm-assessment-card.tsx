@@ -60,7 +60,7 @@ export const AliveAssessmentCard: React.FC<{ assessment: Course }> = ({ assessme
             <p className="mt-2 text-base flex-grow opacity-70">{assessment.description}</p>
             <Button
               size="sm"
-              onClick={() => router.push(`/candidate/course/${assessment.id}`)}
+              onClick={() => router.push(`/candidate/course/${assessment._id}`)}
               className="mt-6 w-full"
             >
               View More

@@ -25,7 +25,6 @@ const AssessmentForm: React.FC = () => {
   const router = useRouter();
   const token = useAuthStore((s) => s.token);
   const { courseId } = useParams();
-  const courseIdNumber = Number(courseId);
   const quizQuestionsCourseDict = useCandidateStore((s) => s.quizQuestionsCourseDict);
 
   // Prefill user responses from submissionCourseDict if available
@@ -44,22 +43,22 @@ const AssessmentForm: React.FC = () => {
 
   // Fetch questions
   useEffect(() => {
-    if (token && courseId && !quizQuestionsCourseDict[parseInt(courseId as string)]) {
-      getQuestionsByCourseId(token, parseInt(courseId as string));
+    if (token && courseId && !quizQuestionsCourseDict[courseId as string]) {
+      getQuestionsByCourseId(token, courseId as string);
     }
   }, []);
 
   useEffect(() => {
-    if (quizQuestionsCourseDict[courseIdNumber]) {
-      setQuestions(quizQuestionsCourseDict[courseIdNumber]);
+    if (quizQuestionsCourseDict[courseId as string]) {
+      setQuestions(quizQuestionsCourseDict[courseId as string]);
     }
-    if (submissionCourseDict[courseIdNumber]) {
-      setUserAnswers(submissionCourseDict[courseIdNumber].map(sub => sub.score));
+    if (submissionCourseDict[courseId as string]) {
+      setUserAnswers(submissionCourseDict[courseId as string].map(sub => sub.score));
     }
-    if (submissionCourseDict[courseIdNumber] && submissionCourseDict[courseIdNumber].length > 0) {
-      setPageIndex(submissionCourseDict[courseIdNumber].length - 1);
+    if (submissionCourseDict[courseId as string] && submissionCourseDict[courseId as string].length > 0) {
+      setPageIndex(submissionCourseDict[courseId as string].length - 1);
     }
-  }, [quizQuestionsCourseDict, submissionCourseDict, courseIdNumber]);
+  }, [quizQuestionsCourseDict, submissionCourseDict, courseId]);
 
   // Initialize userAnswers
   useEffect(() => {
@@ -86,12 +85,13 @@ const AssessmentForm: React.FC = () => {
   const goPrev = () => setPageIndex((i) => Math.max(0, i - 1));
   const goNext = () => {
     // Submit answer call
+    
     if (token && current) {
       submitAnswer(
         token,
-        Number(courseId),
-        5,
-        current.quiz_id as number,
+        courseId as string,
+        current.chapter_id ?? "6casda2q21",
+        current.quiz_id!,
         current.id,
         currentAnswer,
         currentAnswer
@@ -301,9 +301,9 @@ const AssessmentForm: React.FC = () => {
                         if (token && current) {
                           submitAnswer(
                             token,
-                            Number(courseId),
-                            5,
-                            current.quiz_id as number,
+                            courseId as string,
+                            current.chapter_id ?? "6casda2q21",
+                            current.quiz_id!,
                             current.id,
                             currentAnswer,
                             currentAnswer

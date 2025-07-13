@@ -30,7 +30,9 @@ import AddQuizForm from "@/components/forms/add-quiz";
 const ChapterPanel: React.FC = () => {
   const router = useRouter();
   const token = useAuthStore((state) => state.token);
-  const { assessmentId, chapterId } = useParams();
+  const params = useParams();
+  const assessmentId = params.assessmentId as string;
+  const chapterId = params.chapterId as string;
   const {
     getQuizzesByCourse,
     getQuestionsByQuiz,
@@ -41,12 +43,12 @@ const ChapterPanel: React.FC = () => {
   const chapterByCourse = useAdminStore((state) => state.chaptersByCourse);
   const quizzes = useAdminStore((state) => state.quizzes);
   const chapterQuizzes = quizzes.filter(
-    (q) => q.chapter_id === Number(chapterId)
+    (q) => q.chapter_id === chapterId
   );
   const questions = useAdminStore((state) => state.questions);
 
-  const chapter = chapterByCourse[Number(assessmentId)]?.find(
-    (ch) => ch.id === Number(chapterId)
+  const chapter = chapterByCourse[assessmentId]?.find(
+    (ch) => ch._id === chapterId
   );
 
   const [showQuestionForm, setShowQuestionForm] = useState<{
@@ -60,7 +62,7 @@ const ChapterPanel: React.FC = () => {
 
   // Quiz dropdown state
   const [currentQuestionIndices, setCurrentQuestionIndices] = useState<
-    Record<number, number>
+    Record<string, number>
   >({});
 
   // Loading state for quizzes
@@ -73,10 +75,10 @@ const ChapterPanel: React.FC = () => {
   const [editedDescription, setEditedDescription] = useState("");
 
   const [isEditingQuizDescription, setIsEditingQuizDescription] = useState<
-    Record<number, boolean>
+    Record<string, boolean>
   >({});
   const [editedQuizDescriptions, setEditedQuizDescriptions] = useState<
-    Record<number, string>
+    Record<string, string>
   >({});
 
   const [showQuizForm, setShowQuizForm] = useState(false);
@@ -84,7 +86,7 @@ const ChapterPanel: React.FC = () => {
   useEffect(() => {
     if (token && assessmentId) {
       setIsLoadingQuizzes(true);
-      getQuizzesByCourse(token, Number(assessmentId)).finally(() =>
+      getQuizzesByCourse(token, assessmentId).finally(() =>
         setIsLoadingQuizzes(false)
       );
     }
@@ -102,12 +104,13 @@ const ChapterPanel: React.FC = () => {
   useEffect(() => {
     if (token && quizzes.length > 0) {
       quizzes.forEach((quiz) => {
+        console.log(quiz)
         getQuestionsByQuiz(token, quiz.id);
       });
     }
   }, [token, quizzes, getQuestionsByQuiz]);
 
-  const handleNextQuestion = (quizId: number) => {
+  const handleNextQuestion = (quizId: string) => {
     const quizQuestions = questions[quizId] || [];
     const currentIndex = currentQuestionIndices[quizId] || 0;
 
@@ -119,7 +122,7 @@ const ChapterPanel: React.FC = () => {
     }
   };
 
-  const handlePreviousQuestion = (quizId: number) => {
+  const handlePreviousQuestion = (quizId: string) => {
     const currentIndex = currentQuestionIndices[quizId] || 0;
 
     if (currentIndex > 0) {
@@ -137,11 +140,11 @@ const ChapterPanel: React.FC = () => {
 
   const handleTitleBlur = async () => {
     if (token) {
-      await updateChapter(token, Number(chapterId), Number(assessmentId), {
+      await updateChapter(token, chapterId, assessmentId, {
         title: editedTitle,
       });
       // Refetch chapters for the course
-      await getChaptersByCourse(token, Number(assessmentId));
+      await getChaptersByCourse(token, assessmentId);
     }
     setIsEditingTitle(false);
   };
@@ -153,14 +156,14 @@ const ChapterPanel: React.FC = () => {
 
   const handleDescriptionBlur = () => {
     if (token) {
-      updateChapter(token, Number(chapterId), Number(assessmentId), {
+      updateChapter(token, chapterId, assessmentId, {
         description: editedDescription,
       });
     }
     setIsEditingDescription(false);
   };
 
-  const handleQuizDescriptionClick = (quizId: number, description: string) => {
+  const handleQuizDescriptionClick = (quizId: string, description: string) => {
     setIsEditingQuizDescription((prev) => ({ ...prev, [quizId]: true }));
     setEditedQuizDescriptions((prev) => ({
       ...prev,
@@ -168,7 +171,7 @@ const ChapterPanel: React.FC = () => {
     }));
   };
 
-  const handleQuizUpdate = (quizId: number) => {
+  const handleQuizUpdate = (quizId: string) => {
     const newDescription = editedQuizDescriptions[quizId];
     if (!token) return;
     // Here you would typically call an update service
@@ -487,7 +490,7 @@ const ChapterPanel: React.FC = () => {
             </div>
             <div className="w-full h-full mt-14">
               <AddEditQuestionForm
-                quizId={showQuestionForm.quiz?.id || 0}
+                quizId={showQuestionForm.quiz?._id || ""}
                 quiz={showQuestionForm.quiz}
                 onClose={() =>
                   setShowQuestionForm({ active: false, isEdit: false })
@@ -517,8 +520,8 @@ const ChapterPanel: React.FC = () => {
             </div>
             <div className="w-full h-full mt-14 flex items-center justify-center">
               <AddQuizForm
-                chapterId={Number(chapterId)}
-                courseId={Number(assessmentId)}
+                chapterId={chapterId}
+                courseId={assessmentId}
                 onClose={() => setShowQuizForm(false)}
               />
             </div>

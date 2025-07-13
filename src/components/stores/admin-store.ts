@@ -17,7 +17,7 @@ import {
   createQuiz as createQuizService,
   createQuestion,
 } from "@/services/quizzes";
-import { getAllOrganizations, updateOrganization } from "@/services/organizations";
+import { assignCourseToOrg, getAllOrganizations, getAssignedCourses, removeCourseFromOrg, updateOrganization } from "@/services/organizations";
 import {
   getAllAssessments,
   createCourse as createCourseService,
@@ -39,95 +39,99 @@ export interface AdminStoreState {
   organizations: Organization[];
   norms: Norm[];
   courses: Course[];
-  chaptersByCourse: Record<number, Chapter[]>;
+  chaptersByCourse: Record<string, Chapter[]>;
   quizzes: Quiz[]; // quizzes by course ID
-  quizzesByChapter: Record<number, Quiz[]>; // quizzes by chapter ID
-  questions: Record<number, Question[]>; // questions by quiz ID
-  reports: Record<number, Report>; // reports by course ID
-  submissions: Record<number, Submission[]>; // submissions by course ID
+  quizzesByChapter: Record<string, Quiz[]>; // quizzes by chapter ID
+  questions: Record<string, Question[]>; // questions by quiz ID
+  reports: Record<string, Report>; // reports by course ID
+  submissions: Record<string, Submission[]>; // submissions by course ID
 
   // Legacy properties for backward compatibility
   assessments: Course[];
-  quizQuestionsCourseDict: Record<number, Question[]>;
-  submissionCourseDict: Record<number, Submission[]>;
-  courseQuizMetadataDict: Record<number, Quiz[]>;
+  quizQuestionsCourseDict: Record<string, Question[]>;
+  submissionCourseDict: Record<string, Submission[]>;
+  courseQuizMetadataDict: Record<string, Quiz[]>;
+  scalesByOrg: Record<string, string[]>; // scales by organization ID
 
   // Setters
   setOrganizations: (orgs: Organization[]) => void;
   setCourses: (courses: Course[]) => void;
-  setChaptersByCourse: (courseId: number, chapters: Chapter[]) => void;
+  setChaptersByCourse: (courseId: string, chapters: Chapter[]) => void;
   setQuizzes: (quizzes: Quiz[]) => void;
-  setQuestions: (quizId: number, questions: Question[]) => void;
-  setReports: (reports: Record<number, Report>) => void;
-  setSubmissions: (courseId: number, submissions: Submission[]) => void;
+  setQuestions: (quizId: string, questions: Question[]) => void;
+  setReports: (reports: Record<string, Report>) => void;
+  setSubmissions: (courseId: string, submissions: Submission[]) => void;
   setNorms: (norms: Norm[]) => void;
   // addQuestionToQuiz: 
 
   // Legacy setters for backward compatibility
   setAssessments: (assessments: Course[]) => void;
-  setCourseQuizMetadataDict: (courseId: number, quizzes: Quiz[]) => void;
+  setCourseQuizMetadataDict: (courseId: string, quizzes: Quiz[]) => void;
   setSubmissionCourseDict: (
-    courseId: number,
+    courseId: string,
     submissions: Submission[]
   ) => void;
-  setQuizQuestionsCourseDict: (courseId: number, questions: Question[]) => void;
+  setQuizQuestionsCourseDict: (courseId: string, questions: Question[]) => void;
+  setScalesByOrg: (orgId: string) => Promise<void>;
 
   // Data fetching methods
   getCourses: (token: string) => Promise<void>;
-  getChaptersByCourse: (token: string, courseId: number) => Promise<void>;
-  getQuizzesByChapter: (token: string, chapterId: number) => Promise<void>;
-  getQuizzesByCourse: (token: string, courseId: number) => Promise<void>;
-  getQuestionsByQuiz: (token: string, quizId: number) => Promise<void>;
-  getReportsByCourse: (token: string, courseId: number) => Promise<void>;
-  getSubmissionsByCourse: (token: string, courseId: number) => Promise<void>;
+  getChaptersByCourse: (token: string, courseId: string) => Promise<void>;
+  getQuizzesByChapter: (token: string, chapterId: string) => Promise<void>;
+  getQuizzesByCourse: (token: string, courseId: string) => Promise<void>;
+  getQuestionsByQuiz: (token: string, quizId: string) => Promise<void>;
+  getReportsByCourse: (token: string, courseId: string) => Promise<void>;
+  getSubmissionsByCourse: (token: string, courseId: string) => Promise<void>;
   getNorms: (token: string) => Promise<void>;
 
   // Legacy methods for backward compatibility
   getAssessments: (token: string) => Promise<void>;
-  getQuestionsByCourseId: (token: string, courseId: number) => Promise<void>;
-  getSubmissionsByCourseId: (token: string, courseId: number) => Promise<void>;
-  getCourseReport: (token: string, courseId: number) => Promise<void>;
+  getQuestionsByCourseId: (token: string, courseId: string) => Promise<void>;
+  getSubmissionsByCourseId: (token: string, courseId: string) => Promise<void>;
+  getCourseReport: (token: string, courseId: string) => Promise<void>;
   submitAnswer: (
     token: string,
-    courseId: number,
-    chapterId: number,
-    quizId: number,
-    questionId: number,
-    selectedOption: number,
-    score: number
+    courseId: string,
+    chapterId: string,
+    quizId: string,
+    questionId: string,
+    selectedOption: string,
+    score: string
   ) => Promise<void>;
 
   // Assessment management
   createCourse: (
     token: string,
-    courseData: { title: string; description?: string, image: string, normId: number }
+    courseData: { title: string; description?: string, image: string, normId: string }
   ) => Promise<void>;
-  deleteCourse: (token: string, courseId: number) => Promise<void>;
+  deleteCourse: (token: string, courseId: string) => Promise<void>;
 
-  updateChapter: (token: string, chapterId: number, courseId: number, updatedChapter: Partial<Chapter>) => Promise<void>;
-  createChapter: (token: string, chapter: { course_id: number, title: string, chapter_order: number, image: string, description: string, norm_id: number }) => Promise<void>;
+  updateChapter: (token: string, chapterId: string, courseId: string, updatedChapter: Partial<Chapter>) => Promise<void>;
+  createChapter: (token: string, chapter: { course_id: string, title: string, chapter_order: number, image: string, description: string, norm_id: string }) => Promise<void>;
   // Organization management
   fetchOrganizations: () => Promise<void>;
   updateOrganization: (
-    orgId: number,
+    orgId: string,
     updatedOrg: Partial<Organization>
   ) => Promise<void>;
-  updateQuestion: (token: string, questionId: number, updatedQuestion: Partial<Question>) => Promise<void>;
+  assignScaleToOrg: (token: string, orgId: string, scaleId: string) => Promise<void>;
+  removeScaleFromOrg: (token: string, orgId: string, scaleId: string) => Promise<void>;
+  updateQuestion: (token: string, questionId: string, updatedQuestion: Partial<Question>) => Promise<void>;
   createQuestion: (token: string, question: Partial<Question>) => Promise<void>;
   // Utility methods
   clearAdminStore: () => void;
-  getChaptersByCourseIdUtility: (courseId: number) => Chapter[] | undefined;
-  getCourseByIdUtility: (courseId: number) => Course | undefined;
-  getQuizzesByCourseIdUtility: (courseId: number) => Quiz[];
-  getQuestionsByQuizIdUtility: (quizId: number) => Question[];
-  getReportByCourseIdUtility: (courseId: number) => Report | undefined;
-  getSubmissionsByCourseIdUtility: (courseId: number) => Submission[];
+  getChaptersByCourseIdUtility: (courseId: string) => Chapter[] | undefined;
+  getCourseByIdUtility: (courseId: string) => Course | undefined;
+  getQuizzesByCourseIdUtility: (courseId: string) => Quiz[];
+  getQuestionsByQuizIdUtility: (quizId: string) => Question[];
+  getReportByCourseIdUtility: (courseId: string) => Report | undefined;
+  getSubmissionsByCourseIdUtility: (courseId: string) => Submission[];
 
   createQuiz: (
     token: string,
-    quizData: { chapter_id: number; course_id: number; title: string; description: string; image: string; norm_id: number }
+    quizData: { chapter_id: string; course_id: string; title: string; description: string; image: string; norm_id: string }
   ) => Promise<void>;
-  updateQuiz: (token: string, quizId: number, updatedQuiz: Partial<Quiz>) => Promise<void>;
+  updateQuiz: (token: string, quizId: string, updatedQuiz: Partial<Quiz>) => Promise<void>;
 }
 
 export const useAdminStore = create<AdminStoreState>()(
@@ -150,7 +154,7 @@ export const useAdminStore = create<AdminStoreState>()(
         quizQuestionsCourseDict: {},
         submissionCourseDict: {},
         courseQuizMetadataDict: {},
-
+        scalesByOrg: {},
         // Core setters
         setOrganizations: (orgs) => set({ organizations: orgs }),
         setCourses: (courses) => set({ courses }),
@@ -188,7 +192,7 @@ export const useAdminStore = create<AdminStoreState>()(
               set((state) => ({
                 chaptersByCourse: {
                   ...state.chaptersByCourse,
-                  [courseId]: state.chaptersByCourse[courseId].map((chapter) => chapter.id === chapterId ? chapter : chapter),
+                  [courseId]: state.chaptersByCourse[courseId].map((chapter) => chapter._id === chapterId ? chapter : chapter),
                 },
               }));
               console.debug("Updated chapter:", data);
@@ -261,7 +265,34 @@ export const useAdminStore = create<AdminStoreState>()(
               [courseId]: questions,
             },
           })),
-
+        setScalesByOrg: async (orgId) => {
+          try {
+            const response = await getAssignedCourses(orgId);
+            if(response.ok) {
+              const courses = response.data.courses;
+              console.log('API Response courses:', courses);
+              
+              // Map the course IDs - try different possible field names
+              const courseIds = courses.map(course => {
+                // Try different possible field names for course ID
+                return course.course_id || course._id || course.id || course.courseId;
+              });
+              
+              console.log('Mapped course IDs:', courseIds);
+              
+              set((state) => ({
+                scalesByOrg: {
+                  ...state.scalesByOrg,
+                  [orgId]: courseIds,
+                },
+              }));
+            }
+          } catch (err) {
+            console.error(err);
+            throw err;
+          }
+        },
+          
         // Core data fetching methods
         getCourses: async (token: string) => {
           try {
@@ -278,7 +309,7 @@ export const useAdminStore = create<AdminStoreState>()(
           }
         },
 
-        getChaptersByCourse: async (token: string, courseId: number) => {
+        getChaptersByCourse: async (token: string, courseId: string) => {
           try {
             const response = await getAllChapters(token, courseId);
             if (response.ok) {
@@ -299,7 +330,7 @@ export const useAdminStore = create<AdminStoreState>()(
           }
         },
 
-        getQuizzesByChapter: async (token: string, chapterId: number) => {
+        getQuizzesByChapter: async (token: string, chapterId: string) => {
           try {
             const response = await getAllQuizzesByChapter(token, chapterId);
             if (response.ok) {
@@ -324,7 +355,7 @@ export const useAdminStore = create<AdminStoreState>()(
           }
         },
 
-        getQuizzesByCourse: async (token: string, courseId: number) => {
+        getQuizzesByCourse: async (token: string, courseId: string) => {
           try {
             const response = await getAllQuizzesByCourse(token, courseId);
             if (response.ok) {
@@ -350,7 +381,7 @@ export const useAdminStore = create<AdminStoreState>()(
             throw error;
           }
         },
-        getQuestionsByQuiz: async (token: string, quizId: number) => {
+        getQuestionsByQuiz: async (token: string, quizId: string) => {
           try {
             const response = await getAllQuestionsByQuizId(token, quizId);
             if (response.ok) {
@@ -377,7 +408,7 @@ export const useAdminStore = create<AdminStoreState>()(
             throw error;
           }
         },
-        getReportsByCourse: async (token: string, courseId: number) => {
+        getReportsByCourse: async (token: string, courseId: string) => {
           try {
             const response = await fetchCourseReport(token, courseId);
             if (response.ok) {
@@ -399,7 +430,7 @@ export const useAdminStore = create<AdminStoreState>()(
             throw error;
           }
         },
-        getSubmissionsByCourse: async (token: string, courseId: number) => {
+        getSubmissionsByCourse: async (token: string, courseId: string) => {
           try {
             const response = await fetchSubmissions(token, courseId);
             if (response.ok) {
@@ -443,7 +474,7 @@ export const useAdminStore = create<AdminStoreState>()(
           const { getCourses } = get();
           await getCourses(token);
         },
-        getQuestionsByCourseId: async (token: string, courseId: number) => {
+        getQuestionsByCourseId: async (token: string, courseId: string) => {
           try {
             const { getQuizzesByCourse } = get();
             await getQuizzesByCourse(token, courseId);
@@ -462,22 +493,22 @@ export const useAdminStore = create<AdminStoreState>()(
           }
         },
 
-        getSubmissionsByCourseId: async (token: string, courseId: number) => {
+        getSubmissionsByCourseId: async (token: string, courseId: string) => {
           const { getSubmissionsByCourse } = get();
           await getSubmissionsByCourse(token, courseId);
         },
-        getCourseReport: async (token: string, courseId: number) => {
+        getCourseReport: async (token: string, courseId: string) => {
           const { getReportsByCourse } = get();
           await getReportsByCourse(token, courseId);
         },
         submitAnswer: async (
           token: string,
-          courseId: number,
-          chapterId: number,
-          quizId: number,
-          questionId: number,
-          selectedOption: number,
-          score: number
+          courseId: string,
+          chapterId: string,
+          quizId: string,
+          questionId: string,
+          selectedOption: string,
+          score: string
         ) => {
           try {
             const response = await submitSingleAnswer(
@@ -486,8 +517,8 @@ export const useAdminStore = create<AdminStoreState>()(
               chapterId,
               quizId,
               questionId,
-              selectedOption,
-              score
+              parseInt(selectedOption),
+              parseInt(score)
             );
             if (response.status === 201) {
               console.log("Answer stored!");
@@ -547,7 +578,7 @@ export const useAdminStore = create<AdminStoreState>()(
           }
         },
         updateOrganization: async (
-          orgId: number,
+          orgId: string,
           updatedOrg: Partial<Organization>
         ) => {
           try {
@@ -567,6 +598,28 @@ export const useAdminStore = create<AdminStoreState>()(
             console.error("Error updating organization:", error);
           }
         },
+        assignScaleToOrg: async (token: string, orgId: string, scaleId: string) => {
+          try {
+            const response = await assignCourseToOrg(token, orgId, scaleId);
+            if(response.ok) {
+              get().setScalesByOrg(orgId);
+            }
+          } catch (error) {
+            console.error("Error assigning scale to organization:", error);
+            throw error;
+          }
+        },
+        removeScaleFromOrg: async (token: string, orgId: string, scaleId: string) => {
+          try {
+            const response = await removeCourseFromOrg(token, orgId, scaleId);
+            if(response.ok) {
+              get().setScalesByOrg(orgId);
+            }
+          } catch (error) {
+            console.error("Error assigning scale to organization:", error);
+            throw error;
+          }
+        },
 
         // Utility methods
         clearAdminStore: () =>
@@ -582,27 +635,27 @@ export const useAdminStore = create<AdminStoreState>()(
             courseQuizMetadataDict: {},
             submissionCourseDict: {},
           })),
-        getChaptersByCourseIdUtility: (courseId: number) => {
+        getChaptersByCourseIdUtility: (courseId: string) => {
           const state = get();
           return state.chaptersByCourse[courseId];
         },
-        getCourseByIdUtility: (courseId: number) => {
-          const state = get();
-          return state.courses.find((course) => course.id === courseId);
-        },
-        getQuizzesByCourseIdUtility: (courseId: number) => {
+                  getCourseByIdUtility: (courseId: string) => {
+            const state = get();
+            return state.courses.find((course) => course._id === courseId);
+          },
+        getQuizzesByCourseIdUtility: (courseId: string) => {
           const state = get();
           return state.quizzes.filter((quiz) => quiz.course_id === courseId);
         },
-        getQuestionsByQuizIdUtility: (quizId: number) => {
+        getQuestionsByQuizIdUtility: (quizId: string) => {
           const state = get();
           return state.questions[quizId] || [];
         },
-        getReportByCourseIdUtility: (courseId: number) => {
+        getReportByCourseIdUtility: (courseId: string) => {
           const state = get();
           return state.reports[courseId];
         },
-        getSubmissionsByCourseIdUtility: (courseId: number) => {
+        getSubmissionsByCourseIdUtility: (courseId: string) => {
           const state = get();
           return state.submissions[courseId] || [];
         },

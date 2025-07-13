@@ -5,7 +5,7 @@ import { retryFetch } from "@/lib/utils";
 const ORG_HOST = process.env.NEXT_PUBLIC_AWS_ORG_HOST!;
 
 export const updateOrganization = async (
-  orgId: number,
+  orgId: string,
   update: Partial<Organization>
 ) => {
   const payload = {
@@ -26,16 +26,17 @@ export const updateOrganization = async (
 
 export const getAllOrganizations = async () => {
   const response = await signAndRequest(
-    "GET",
+    "POST",
     {},
     ORG_HOST,
     "/default/orgHandlerAPI?action=getAllOrganizations",
+    {}
   );
 
   return response;
 };
 
-export const getOrganizationById = async (orgId: number) => {
+export const getOrganizationById = async (orgId: string) => {
   const payload = {
     organization_id: orgId,
   };
@@ -45,6 +46,60 @@ export const getOrganizationById = async (orgId: number) => {
     {},
     ORG_HOST,
     "default/orgHandlerAPI?action=getOrganization",
+    payload
+  );
+
+  return response;
+};
+
+export const getAssignedCourses = async (orgId: string) => {
+  const payload = {
+    organization_id: orgId,
+  };
+
+  const response = await signAndRequest(
+    "POST",
+    {},
+    ORG_HOST,
+    "/default/orgHandlerAPI?action=getAssignedCourses",
+    payload
+  );
+
+  return response;
+};
+
+export const assignCourseToOrg = async (
+  token: string,
+  orgId: string,
+  courseId: string
+) => {
+  const payload = {
+    organization_id: orgId,
+    course_id: courseId,
+  };
+
+  const response = await signAndRequest(
+    "POST",
+    { token: `Bearer ${token}` },
+    ORG_HOST,
+    "/default/orgHandlerAPI?action=assignCourseToOrganization",
+    payload
+  );
+
+  return response;
+};
+
+export const removeCourseFromOrg = async (token: string, orgId: string, courseId: string) => {
+  const payload = {
+    organization_id: orgId,
+    course_id: courseId,
+  };
+
+  const response = await signAndRequest(
+    "POST",
+    { token: `Bearer ${token}` },
+    ORG_HOST,
+    "/default/orgHandlerAPI?action=unassignCourseFromOrganization",
     payload
   );
 

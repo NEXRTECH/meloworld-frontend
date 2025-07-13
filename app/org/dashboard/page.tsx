@@ -3,16 +3,18 @@
 import React, { useState, useEffect } from "react";
 import CandidatesTable from "@/components/panels/org/candidates-table";
 import ScalesTable from "@/components/panels/org/scales-table";
+import { useOrgStore } from "@/components/stores/org-store";
+import { useAuthStore } from "@/components/stores/auth-store";
 
 const OrgDashboardPage = () => {
   const [lastUpdated, setLastUpdated] = useState(new Date());
-
+  const {token} = useAuthStore();
+  const {getCourses} = useOrgStore();
+  const courses = useOrgStore(s => s.courses);
   useEffect(() => {
-    const timer = setInterval(() => {
-      setLastUpdated(new Date());
-    }, 60000);
-    return () => clearInterval(timer);
-  }, []);
+    if(token)
+      getCourses(token);
+  }, [token]);
 
   return (
     <div className="dashboard-panel overflow-y-auto p-4">

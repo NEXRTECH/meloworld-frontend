@@ -1,19 +1,27 @@
-import React, { useState } from 'react'
-import Input from '../ui/input/input'
-import Button from '../ui/button/button'
-import TextArea from '../ui/textarea/textarea'
-import { useAdminStore } from '../stores/admin-store'
-import { useAuthStore } from '../stores/auth-store'
-import { useToast } from '../hooks/use-toast'
-import { Norm } from '../types'
+import React, { useState } from "react";
+import Input from "../ui/input/input";
+import Button from "../ui/button/button";
+import TextArea from "../ui/textarea/textarea";
+import { useAdminStore } from "../stores/admin-store";
+import { useAuthStore } from "../stores/auth-store";
+import { useToast } from "../hooks/use-toast";
+import { Norm } from "../types";
 
-const AddChapterForm = ({ onClose, courseId, norms }: { onClose: () => void, courseId: number, norms: Norm[] }) => {
-  const [title, setTitle] = useState('');
+const AddChapterForm = ({
+  onClose,
+  courseId,
+  norms,
+}: {
+  onClose: () => void;
+  courseId: string;
+  norms: Norm[];
+}) => {
+  const [title, setTitle] = useState("");
   const [chapterOrder, setChapterOrder] = useState(0);
-  const [image, setImage] = useState('');
-  const [description, setDescription] = useState('');
-  const [selectedNormId, setSelectedNormId] = useState<number | null>(null);
-  const [normSearch, setNormSearch] = useState('');
+  const [image, setImage] = useState("");
+  const [description, setDescription] = useState("");
+  const [selectedNormId, setSelectedNormId] = useState<string | null>(null);
+  const [normSearch, setNormSearch] = useState("");
   const [showNormDropdown, setShowNormDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -22,62 +30,65 @@ const AddChapterForm = ({ onClose, courseId, norms }: { onClose: () => void, cou
   const { token } = useAuthStore();
   const { toast } = useToast();
 
-  const filteredNorms = norms.filter(norm =>
-    norm.scale_name.toLowerCase().includes(normSearch.toLowerCase()) ||
-    norm.gender.toLowerCase().includes(normSearch.toLowerCase())
+  const filteredNorms = norms.filter(
+    (norm) =>
+      norm.scale_name.toLowerCase().includes(normSearch.toLowerCase()) ||
+      norm.gender.toLowerCase().includes(normSearch.toLowerCase())
   );
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedNormId) {
-      setMessage('Please select a norm.');
+      setMessage("Please select a norm.");
       return;
     }
     if (!token) {
-      setMessage('You must be logged in.');
+      setMessage("You must be logged in.");
       return;
     }
     setLoading(true);
     setMessage(null);
-    try {
-      await createChapter(token, {
-        course_id: courseId,
-        title,
-        chapter_order: chapterOrder,
-        image,
-        description,
-        norm_id: selectedNormId,
-      });
-      toast({
-        title: 'Chapter created',
-        description: 'The chapter has been created',
-        variant: 'success',
-      });
-      setTitle('');
-      setChapterOrder(0);
-      setImage('');
-      setDescription('');
-      setSelectedNormId(null);
-      onClose();
-    } catch (err) {
-      setMessage('Failed to create chapter.');
-      toast({
-        title: 'Error',
-        description: 'Failed to create chapter',
-        variant: 'error',
-      });
-    } finally {
-      setLoading(false);
-    }
+    createChapter(token, {
+      course_id: courseId,
+      title,
+      chapter_order: chapterOrder,
+      image,
+      description,
+      norm_id: selectedNormId,
+    })
+      .then(() =>
+        toast({
+          title: "Chapter created",
+          description: "The chapter has been created",
+          variant: "success",
+        })
+      )
+      .catch((err) =>
+        toast({
+          title: "Error",
+          description: "Failed to create chapter",
+          variant: "error",
+        })
+      )
+      .finally(() => setLoading(false));
+    setTitle("");
+    setChapterOrder(0);
+    setImage("");
+    setDescription("");
+    setSelectedNormId(null);
+    onClose();
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-md mx-auto p-4 bg-white rounded-xl shadow">
+    <form
+      onSubmit={handleSubmit}
+      className="flex flex-col gap-4 max-w-md mx-auto p-4 bg-white rounded-xl shadow"
+    >
       <Input
         type="text"
         name="title"
         value={title}
-        onChange={e => setTitle(e.target.value)}
+        onChange={(e) => setTitle(e.target.value)}
         required
         placeholder="Title"
       />
@@ -85,7 +96,7 @@ const AddChapterForm = ({ onClose, courseId, norms }: { onClose: () => void, cou
         type="number"
         name="chapter_order"
         value={chapterOrder}
-        onChange={e => setChapterOrder(Number(e.target.value))}
+        onChange={(e) => setChapterOrder(Number(e.target.value))}
         required
         placeholder="Chapter Order"
       />
@@ -93,13 +104,13 @@ const AddChapterForm = ({ onClose, courseId, norms }: { onClose: () => void, cou
         type="text"
         name="image"
         value={image}
-        onChange={e => setImage(e.target.value)}
+        onChange={(e) => setImage(e.target.value)}
         placeholder="Image URL (optional)"
       />
       <TextArea
         name="description"
         value={description}
-        onChange={e => setDescription(e.target.value)}
+        onChange={(e) => setDescription(e.target.value)}
         required
         placeholder="Description"
         rows={4}
@@ -110,10 +121,15 @@ const AddChapterForm = ({ onClose, courseId, norms }: { onClose: () => void, cou
           placeholder="Search and select norm"
           value={
             selectedNormId
-              ? `${norms.find(n => n.normId === selectedNormId)?.scale_name || ''} (${norms.find(n => n.normId === selectedNormId)?.gender || ''})`
+              ? `${
+                  norms.find((n) => n.normId === selectedNormId)?.scale_name ||
+                  ""
+                } (${
+                  norms.find((n) => n.normId === selectedNormId)?.gender || ""
+                })`
               : normSearch
           }
-          onChange={e => {
+          onChange={(e) => {
             setNormSearch(e.target.value);
             setShowNormDropdown(true);
             setSelectedNormId(null);
@@ -126,13 +142,13 @@ const AddChapterForm = ({ onClose, courseId, norms }: { onClose: () => void, cou
             {filteredNorms.length === 0 && (
               <div className="p-2 text-gray-500">No norms found</div>
             )}
-            {filteredNorms.map(norm => (
+            {filteredNorms.map((norm) => (
               <div
                 key={norm._id}
                 className="p-2 hover:bg-blue-100 cursor-pointer"
                 onClick={() => {
                   setSelectedNormId(norm.normId);
-                  setNormSearch('');
+                  setNormSearch("");
                   setShowNormDropdown(false);
                 }}
               >
@@ -147,7 +163,7 @@ const AddChapterForm = ({ onClose, courseId, norms }: { onClose: () => void, cou
             className="absolute right-2 top-2 text-gray-400 hover:text-gray-600"
             onClick={() => {
               setSelectedNormId(null);
-              setNormSearch('');
+              setNormSearch("");
               setShowNormDropdown(true);
             }}
           >
@@ -156,14 +172,16 @@ const AddChapterForm = ({ onClose, courseId, norms }: { onClose: () => void, cou
         )}
       </div>
       <Button type="submit" disabled={loading}>
-        {loading ? 'Creating...' : 'Create Chapter'}
+        {loading ? "Creating..." : "Create Chapter"}
       </Button>
       {message && <div className="text-center text-sm mt-2">{message}</div>}
       <div className="flex gap-2 mt-4">
-        <Button type="button" size="md" variant="outline" onClick={onClose}>Cancel</Button>
+        <Button type="button" size="md" variant="outline" onClick={onClose}>
+          Cancel
+        </Button>
       </div>
     </form>
   );
-}
+};
 
-export default AddChapterForm
+export default AddChapterForm;

@@ -2,7 +2,7 @@ import { signAndRequest } from "@/lib/aws-axios";
 
 const userTypeHost: { [type: string]: string } = {
   admin: process.env.NEXT_PUBLIC_AWS_ADMIN_HOST as string,
-  org: process.env.NEXT_PUBLIC_AWS_ADMIN_HOST as string,
+  org: process.env.NEXT_PUBLIC_AWS_ORG_HOST as string,
   candidate: process.env.NEXT_PUBLIC_AWS_CANDIDATE_HOST as string,
   therapist: process.env.NEXT_PUBLIC_AWS_THERAPIST_HOST as string
 };
@@ -33,7 +33,7 @@ export const signupService = {
     name: string,
     email: string,
     password: string,
-    organizationId: number,
+    organizationId: string,
     age: number, 
     gender: "male" | "female"
   ) => {
@@ -65,7 +65,7 @@ export const signupService = {
       name: name,
       email: email,
       password: password,
-      organization_id: 1
+      organization_id: "1"
     };
 
     const response = await signAndRequest(
@@ -78,18 +78,43 @@ export const signupService = {
 
     return response;
   },
+  
+  org: async (
+    name: string,
+    email: string,
+    password: string,
+    organizationName: string,
+    organizationType: string,
+    contactEmail: string,
+  ) => {
+    const payload = {
+      name: name,
+      email: email,
+      password: password,
+      organization_name: organizationName,
+      organization_type: organizationType,
+      contact_email: contactEmail,
+    };
+
+    const response = await signAndRequest(
+      "POST",
+      {},
+      userTypeHost["org"],
+      "/default/orgHandlerAPI?action=register",
+      payload
+    );
+
+    return response;
+  },
 };
 
 export const loginService = {
-  admin: async (
-    email: string,
-    password: string,
-  ) => {
+  admin: async (email: string, password: string) => {
     const payload = {
       email: email,
       password: password,
     };
-  
+
     const response = await signAndRequest(
       "POST",
       {},
@@ -97,18 +122,15 @@ export const loginService = {
       "/default/psychometricAdmin/admin?action=login",
       payload
     );
-  
+
     return response;
   },
-  candidate: async (
-    email: string,
-    password: string,
-  ) => {
+  candidate: async (email: string, password: string) => {
     const payload = {
       email: email,
       password: password,
     };
-  
+
     const response = await signAndRequest(
       "POST",
       {},
@@ -116,26 +138,39 @@ export const loginService = {
       "/default/psychometricUser/user?action=login",
       payload
     );
-  
+
     return response;
   },
-  therapist: async (
-    email: string,
-    password: string,
-  ) => {
+  therapist: async (email: string, password: string) => {
     const payload = {
       email: email,
       password: password,
     };
-  
+
     const response = await signAndRequest(
       "POST",
       {},
       userTypeHost["therapist"],
-      "/default/therapistHandlerAPI?action=loginTherapist",
+      "/default/psychometricUser/user?action=login",
       payload
     );
-  
+
     return response;
-  }
-}
+  },
+  org: async (email: string, password: string) => {
+    const payload = {
+      email: email,
+      password: password,
+    };
+
+    const response = await signAndRequest(
+      "POST",
+      {},
+      userTypeHost["org"],
+      "/default/orgHandlerAPI?action=login",
+      payload
+    );
+
+    return response;
+  },
+};

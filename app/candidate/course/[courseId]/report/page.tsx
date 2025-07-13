@@ -20,7 +20,7 @@ const ReportPage = () => {
 
   useEffect(() => {
     if (token) {
-      getCourseReport(token, Number(courseId));
+      getCourseReport(token, courseId as string);
     }
   }, [token]);
 

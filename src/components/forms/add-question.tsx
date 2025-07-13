@@ -22,7 +22,7 @@ interface QuestionFormState {
 interface AddEditQuestionFormProps {
   isEdit?: boolean;
   onClose: () => void;
-  quizId?: number;
+  quizId?: string;
   quiz?: Quiz;
   question?: Question;
 }
@@ -151,7 +151,7 @@ const AddEditQuestionForm: React.FC<AddEditQuestionFormProps> = ({
     }
 
     if(isEdit) {
-      // await updateQuestion(token, question.id, newQuestion);
+      // await updateQuestion(token, question._id, newQuestion);
     } else {
       createQuestion(token, newQuestion).then(() => {
         toast({

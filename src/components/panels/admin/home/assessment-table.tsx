@@ -67,7 +67,7 @@ const AssessmentTable: React.FC = () => {
         ) : (
           // render actual data
           assessments.map((assessment) => (
-            <tr key={assessment.id}>
+            <tr key={assessment._id}>
               <td className="px-6 py-4 text-sm border-y-2 border-gray-200">
                 {assessment.title}
               </td>

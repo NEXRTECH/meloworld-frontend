@@ -3,7 +3,7 @@ import { retryFetch } from "@/lib/utils";
 
 const CHAPTERS_HOST = process.env.NEXT_PUBLIC_AWS_CHAPTER_HOST;
 
-export const getAllChapters = async (token: string, assessmentId: number) => {
+export const getAllChapters = async (token: string, assessmentId: string) => {
   const url = `https://${CHAPTERS_HOST}/default/psychometricChapter/chapter?action=listChapters`;
   const options = {
     method: "POST",
@@ -20,8 +20,8 @@ export const getAllChapters = async (token: string, assessmentId: number) => {
 
 export const getChapterById = async (
   token: string,
-  assessmentId: number,
-  chapterId: number
+  assessmentId: string,
+  chapterId: string
 ) => {
   const url = `https://${CHAPTERS_HOST}/default/psychometricChapter/chapter?action=getChapter`;
   const options = {
@@ -37,7 +37,7 @@ export const getChapterById = async (
   return response;
 };
 
-export const updateChapterOnServer = async (token: string, chapterId: number, courseId: number, updatedChapter: Partial<Chapter>) => {
+export const updateChapterOnServer = async (token: string, chapterId: string, courseId: string, updatedChapter: Partial<Chapter>) => {
   const url = `https://${CHAPTERS_HOST}/default/psychometricChapter/chapter?action=updateChapter`;
   const options = {
     method: "POST",
@@ -54,8 +54,9 @@ export const updateChapterOnServer = async (token: string, chapterId: number, co
   return response;
 }
 
-export const createChapter = async (token: string, { course_id, title, chapter_order, image, description, norm_id }: { course_id: number, title: string, chapter_order: number, image: string, description: string, norm_id: number }) => {
+export const createChapter = async (token: string, { course_id, title, chapter_order, image, description, norm_id }: { course_id: string, title: string, chapter_order: number, image: string, description: string, norm_id: string }) => {
   const url = `https://${CHAPTERS_HOST}/default/psychometricChapter/chapter?action=createChapter`;
+  console.log(JSON.stringify({ course_id, title, chapter_order, image, description, norm_id }));
   const options = {
     method: "POST",
     headers: {

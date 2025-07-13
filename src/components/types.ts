@@ -1,5 +1,5 @@
 export type Organization = {
-  organization_id: number;
+  organization_id: string;
   organization_name: string;
   organization_type: string;
   contact_email: string;
@@ -8,11 +8,12 @@ export type Organization = {
   created_at: string;
   updated_at: string;
   metadata?: Record<string, any> | null;
+  scales?: string[]; // Array of scale/course IDs assigned to this organization
 };
 
 export type Norm = {
   _id: string;
-  normId: number;
+  normId: string;
   scale_name: string;
   gender: string;
   age_min: number;
@@ -23,7 +24,7 @@ export type Norm = {
 }
 
 export type Course = {
-  id: number;
+  _id: string;
   title: string;
   description: string;
   image: string;
@@ -32,8 +33,8 @@ export type Course = {
 }
 
 export type Chapter = {
-  id: number;
-  course_id: number;
+  _id: string;
+  course_id: string;
   title: string;
   image?: string;
   description: string;
@@ -43,26 +44,26 @@ export type Chapter = {
 };
 
 export type Question = {
-  id: number;
+  id: string;
   question: string;
   type: "single" | "multiple" | "likert";
   options: string[] | Record<number, string>;
   answer: string | null;
   created_at: string;
-  quiz_id?: number;
-  chapter_id?: number;
+  quiz_id?: string;
+  chapter_id?: string;
 };
 
 export type Submission = {
   _id: string;
-  quiz_id: number;
-  course_id: number;
-  chapter_id: number;
-  user_id: number;
-  question_id: number;
+  quiz_id: string;
+  course_id: string;
+  chapter_id: string;
+  user_id: string;
+  question_id: string;
   __v: number;
   created_at: string;
-  organization_id: number;
+  organization_id: string;
   score: number;
   selected_option: number;
 };
@@ -81,7 +82,7 @@ export type Interpretations = {
 };
 
 export type Scale = {
-  quiz_id: number;
+  quiz_id: string;
   scale_name: string;
   score: number;
   interpretation: string;
@@ -91,8 +92,8 @@ export type Scale = {
 };
 
 export type Report = {
-  user_id: number;
-  course_id: number;
+  user_id: string;
+  course_id: string;
   generated_at: string;
   age: number;
   gender: string;
@@ -100,9 +101,9 @@ export type Report = {
 };
 
 export type Quiz = {
-  id: number;
-  course_id: number;
-  chapter_id: number;
+  id: string;
+  course_id: string;
+  chapter_id: string;
   title: string;
   description: string;
   image: string;
@@ -112,8 +113,8 @@ export type Quiz = {
 };
 
 export type Therapist = {
-  therapist_id: number;
-  user_id: number | null;
+  therapist_id: string;
+  user_id: string | null;
   email: string;
   password: string;
   therapist_name: string;
@@ -127,8 +128,8 @@ export type Therapist = {
 };
 
 export type Patient = {
-  patient_id: number;
-  user_id: number;
+  patient_id: string;
+  user_id: string;
   symptoms: string[];
   progress: {
     notes: string;
@@ -149,18 +150,18 @@ export type Patient = {
 };
 
 export type Session = {
-  session_id: number;
-  patient_id: number;
-  therapist_id: number;
-  content_id: number | null;
+  session_id: string;
+  patient_id: string;
+  therapist_id: string;
+  content_id: string | null;
   session_status: string;
   start_time: string;
   end_time: string;
   created_at: string;
   updated_at: string;
   metadata: Record<string, any> | null;
-  patient_user_id: number;
-  therapist_user_id: number | null;
+  patient_user_id: string;
+  therapist_user_id: string | null;
 };
 
 export type UserRole = "candidate" | "admin" | "org" | "therapist";

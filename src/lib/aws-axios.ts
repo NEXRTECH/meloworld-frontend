@@ -16,8 +16,8 @@ export async function signAndRequest(
   const options: RequestInit = {
     method,
     headers: {
-      ...headers,
       "Content-Type": "application/json",
+      ...headers,
     },
     body: body ? JSON.stringify(body) : undefined,
   };

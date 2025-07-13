@@ -6,7 +6,7 @@ const REPORTS_HOST = process.env.NEXT_PUBLIC_AWS_REPORTS_HOST;
 
 export const getAllQuizzesByChapter = async (
   token: string,
-  chapterId: number
+  chapterId: string
 ) => {
   const url = `https://${QUIZ_HOST}/default/psychometricQuiz/quiz?action=listQuizzes`;
   const options = {
@@ -24,7 +24,7 @@ export const getAllQuizzesByChapter = async (
 
 export const getAllQuizzesByCourse = async (
   token: string,
-  courseId: number
+  courseId: string
 ) => {
   const url = `https://${QUIZ_HOST}/default/psychometricQuiz/?action=getAllQuizByCourseId`;
   const options = {
@@ -41,7 +41,7 @@ export const getAllQuizzesByCourse = async (
 
 export const getAllQuestionsByQuizId = async (
   token: string,
-  quizId: number
+  quizId: string
 ) => {
   const url = `https://${QUIZ_HOST}/default/psychometricQuiz/?action=listQuestions`;
   const options = {
@@ -58,8 +58,8 @@ export const getAllQuestionsByQuizId = async (
 
 export const getQuizByChapter = async (
   token: string,
-  chapterId: number,
-  quizId: number,
+  chapterId: string,
+  quizId: string,
 ) => {
   const url = `https://${QUIZ_HOST}/default/psychometricQuiz/quiz?action=getQuiz`;
   const options = {
@@ -108,7 +108,7 @@ export const fetchNorms = async (token: string) => {
 
 export const createQuiz = async (
   token: string,
-  quizData: { chapter_id: number; course_id: number; title: string; description: string; image: string }
+  quizData: { chapter_id: string; course_id: string; title: string; description: string; image: string }
 ) => {
   const url = `https://${QUIZ_HOST}/default/psychometricQuiz?action=createQuiz`;
   const options = {
