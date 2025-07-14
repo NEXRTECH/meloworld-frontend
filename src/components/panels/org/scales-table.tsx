@@ -9,10 +9,10 @@ import React, { useEffect, useState } from "react";
 
 const ScalesTable = () => {
   const { token } = useAuthStore();
-  const { getCourses } = useOrgStore();
-  const courses = useOrgStore((s) => s.courses);
+  const { getAssignedCourses } = useOrgStore();
+  const courses = useOrgStore((s) => s.assignedCourses);
   useEffect(() => {
-    if (token) getCourses(token);
+    if (token) getAssignedCourses(token);
   }, [token]);
 
   const headings = ["Scale", "Description"];
@@ -27,7 +27,7 @@ const ScalesTable = () => {
       </div>
       <Table headings={headings}>
         {courses.map((row, rowIdx) => (
-          <tr key={row.id || rowIdx}>
+          <tr key={row._id || rowIdx}>
             <td>{row.title}</td>
             <td>
               <p className="text-xs">{row.description}</p>

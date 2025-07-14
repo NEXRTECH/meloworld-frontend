@@ -166,7 +166,7 @@ const SessionsPage: React.FC = () => {
       return;
     }
 
-    createSession(therapist_id, newSessionDate, {}, 1)
+    createSession(therapist_id, newSessionDate, {}, "1")
       .then(() => {
         toast({
           title: "Success",

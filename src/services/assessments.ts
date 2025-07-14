@@ -17,7 +17,7 @@ export const getAllAssessments = async (token: string) => {
   return response;
 };
 
-export const createCourse = async (token: string, courseData: { title: string; description?: string, image: string, norm_id: string }
+export const createCourse = async (token: string, courseData: { title: string; description?: string, image: string, norm_id: number }
 ) => {
   const url = `https://${ASSESSMENT_HOST}/default/psychometricCourse/course?action=createCourse`;
   const options = {

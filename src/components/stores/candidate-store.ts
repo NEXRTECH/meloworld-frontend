@@ -89,7 +89,7 @@ export const useCandidateStore = create<CandidateStoreState>()(
             }
           } catch (err) {
             console.error(err);
-            throw error;
+            throw err;
           }
         },
         getAssessments: async (token: string) => {
@@ -97,7 +97,7 @@ export const useCandidateStore = create<CandidateStoreState>()(
             const response = await getAllAssessments(token);
             if (response.ok) {
               const data = await response.json();
-              const assessments: Quiz[] = data.courses ?? [];
+              const assessments: Course[] = data.courses ?? [];
               console.debug("Fetched assessments:", assessments);
               set({ assessments });
             }

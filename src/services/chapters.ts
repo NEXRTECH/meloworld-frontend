@@ -54,7 +54,7 @@ export const updateChapterOnServer = async (token: string, chapterId: string, co
   return response;
 }
 
-export const createChapter = async (token: string, { course_id, title, chapter_order, image, description, norm_id }: { course_id: string, title: string, chapter_order: number, image: string, description: string, norm_id: string }) => {
+export const createChapter = async (token: string, { course_id, title, chapter_order, image, description, norm_id }: { course_id: string, title: string, chapter_order: number, image: string, description: string, norm_id: number }) => {
   const url = `https://${CHAPTERS_HOST}/default/psychometricChapter/chapter?action=createChapter`;
   console.log(JSON.stringify({ course_id, title, chapter_order, image, description, norm_id }));
   const options = {

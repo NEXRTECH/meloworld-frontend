@@ -22,7 +22,7 @@ const PatientPage = () => {
   const { metadata } = useAuthStore((s) => s);
   useEffect(() => {
     if (metadata && "therapist_id" in metadata) {
-      const fetchPatients = async (therapistId: number) => {
+      const fetchPatients = async (therapistId: string) => {
         try {
           const response = await getAssignedPatientsByTherapistId(therapistId);
           if (response && response.ok) {

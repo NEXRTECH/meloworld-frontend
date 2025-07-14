@@ -102,12 +102,12 @@ export interface AdminStoreState {
   // Assessment management
   createCourse: (
     token: string,
-    courseData: { title: string; description?: string, image: string, normId: string }
+    courseData: { title: string; description?: string, image: string, normId: number }
   ) => Promise<void>;
   deleteCourse: (token: string, courseId: string) => Promise<void>;
 
   updateChapter: (token: string, chapterId: string, courseId: string, updatedChapter: Partial<Chapter>) => Promise<void>;
-  createChapter: (token: string, chapter: { course_id: string, title: string, chapter_order: number, image: string, description: string, norm_id: string }) => Promise<void>;
+  createChapter: (token: string, chapter: { course_id: string, title: string, chapter_order: number, image: string, description: string, norm_id: number }) => Promise<void>;
   // Organization management
   fetchOrganizations: () => Promise<void>;
   updateOrganization: (
@@ -129,7 +129,7 @@ export interface AdminStoreState {
 
   createQuiz: (
     token: string,
-    quizData: { chapter_id: string; course_id: string; title: string; description: string; image: string; norm_id: string }
+    quizData: { chapter_id: string; course_id: string; title: string; description: string; image: string; norm_id: number }
   ) => Promise<void>;
   updateQuiz: (token: string, quizId: string, updatedQuiz: Partial<Quiz>) => Promise<void>;
 }

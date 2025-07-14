@@ -3,6 +3,7 @@ import { devtools, persist, createJSONStorage } from "zustand/middleware";
 import { Course, Organization, UserRole } from "../types";
 import { getAllAssessments } from "@/services/assessments";
 import { getAssignedCourses } from "@/services/organizations";
+import { assert } from "console";
 
 interface OrgMetadata {
   organization_id: number;
@@ -93,9 +94,9 @@ export const useOrgStore = create<OrgStore>()(
           try {
             const response = await getAssignedCourses(orgId);
             if (response.ok) {
-              const data = await response.json();
+              const data = await response.data;
               const courses: Course[] = data.courses;
-              set({ courses });
+              set({ assignedCourses: courses });
             }
           } catch (error) {
             console.error("Fetching courses failed:", error.message);

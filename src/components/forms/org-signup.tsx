@@ -94,7 +94,7 @@ const OrganizationSignUpForm: React.FC = () => {
         password: formState.password.value,
       };
 
-      const response = await signupService.org(formData.orgName, formData.orgType, formData.contactEmail, formData.password);
+      const response = await signupService.org(formData.orgName, formData.contactEmail, formData.password, formData.orgType);
 
       if (response.ok) {
         toast({ title: "Signup Successful!", description: "You can now log in with your new account.", variant: "success" });

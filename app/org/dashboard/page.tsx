@@ -9,11 +9,11 @@ import { useAuthStore } from "@/components/stores/auth-store";
 const OrgDashboardPage = () => {
   const [lastUpdated, setLastUpdated] = useState(new Date());
   const {token} = useAuthStore();
-  const {getCourses} = useOrgStore();
-  const courses = useOrgStore(s => s.courses);
+  const {getAssignedCourses} = useOrgStore();
+  const courses = useOrgStore(s => s.assignedCourses);
   useEffect(() => {
     if(token)
-      getCourses(token);
+      getAssignedCourses(token);
   }, [token]);
 
   return (

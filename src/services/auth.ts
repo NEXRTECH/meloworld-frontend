@@ -80,16 +80,12 @@ export const signupService = {
   },
   
   org: async (
-    name: string,
-    email: string,
-    password: string,
     organizationName: string,
-    organizationType: string,
     contactEmail: string,
+    password: string,
+    organizationType: string,
   ) => {
     const payload = {
-      name: name,
-      email: email,
       password: password,
       organization_name: organizationName,
       organization_type: organizationType,

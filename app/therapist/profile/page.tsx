@@ -10,7 +10,7 @@ import { FaPerson } from "react-icons/fa6";
 import { FiEdit, FiSave, FiSettings } from "react-icons/fi";
 
 const therapist: Therapist = {
-  therapist_id: 2,
+  therapist_id: "2",
   user_id: null,
   email: "test@melo.com",
   password: "test@1234",
@@ -31,7 +31,7 @@ const TherapistProfilePage = () => {
 
   useEffect(() => {
     if (metadata && "therapist_id" in metadata) {
-      const fetchTherapist = async (therapistId: number) => {
+      const fetchTherapist = async (therapistId: string) => {
         console.log("fetching therapist with id:", therapistId);
         try {
           const response = await getTherapistById(therapistId);

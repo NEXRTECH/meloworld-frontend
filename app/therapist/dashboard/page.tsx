@@ -26,7 +26,7 @@ const formatISODate = (isoString: string) => {
 const sessionData = [
   {
     session_id: 1,
-    patient_id: 1,
+    patient_id: "1",
     therapist_id: 1,
     content_id: null,
     session_status: "Completed",
@@ -42,7 +42,7 @@ const sessionData = [
   },
   {
     session_id: 2,
-    patient_id: 1,
+    patient_id: "1",
     therapist_id: 1,
     content_id: 101,
     session_status: "Upcoming",
@@ -58,7 +58,7 @@ const sessionData = [
   },
   {
     session_id: 3,
-    patient_id: 1,
+    patient_id: "1",
     therapist_id: 1,
     content_id: 102,
     session_status: "Completed",
@@ -83,9 +83,9 @@ const TherapistHome = () => {
   const { name, therapist_id } = metadata;
 
   useEffect(() => {
-    const fetchPatient = async (patientId: number) => {
+    const fetchPatient = async (patientId: string) => {
       try {
-        const response = await getPatientById(patientId);
+        const response = await getPatientById(patientId as string);
         if (response && response.ok) {
           const data = response.data;
           return data["patient"];

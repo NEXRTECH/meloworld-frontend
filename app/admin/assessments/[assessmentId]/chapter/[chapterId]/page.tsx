@@ -490,7 +490,7 @@ const ChapterPanel: React.FC = () => {
             </div>
             <div className="w-full h-full mt-14">
               <AddEditQuestionForm
-                quizId={showQuestionForm.quiz?._id || ""}
+                quizId={showQuestionForm.quiz?.id || ""}
                 quiz={showQuestionForm.quiz}
                 onClose={() =>
                   setShowQuestionForm({ active: false, isEdit: false })

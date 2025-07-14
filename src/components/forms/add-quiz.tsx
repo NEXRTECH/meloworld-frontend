@@ -17,7 +17,7 @@ const AddQuizForm = ({ onClose, chapterId, courseId }: AddQuizFormProps) => {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [image, setImage] = useState('');
-  const [selectedNormId, setSelectedNormId] = useState<string | null>(null);
+  const [selectedNormId, setSelectedNormId] = useState<number | null>(null);
   const [normSearch, setNormSearch] = useState('');
   const [showNormDropdown, setShowNormDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
