@@ -101,7 +101,12 @@ const LoginForm: React.FC<LoginProps> = ({ userRole }) => {
         if(userRole === "therapist") {
           const { therapist_id, therapist_name } = response.data.therapist;
           setAuth(therapist_id, userRole, { name: therapist_name, therapist_id: therapist_id, email: "" });
-        } else {
+        } else if (userRole === "org") {
+          const {token} = response.data;
+          const {organization_name, organization_type, organization_id, contact_email} = response.data.organization;
+          setAuth(token, userRole, { name: organization_name, organization_id: organization_id, type: organization_type, email: contact_email });
+        }
+        else {
           const { token, name, email } = response.data;
           setAuth(token, userRole, { name, email });
         }

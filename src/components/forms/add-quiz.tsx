@@ -1,36 +1,32 @@
-import React, { useState } from "react";
-import Input from "../ui/input/input";
-import TextArea from "../ui/textarea/textarea";
-import Button from "../ui/button/button";
-import { useAuthStore } from "../stores/auth-store";
-import { useAdminStore } from "../stores/admin-store";
-import { useToast } from "../hooks/use-toast";
-import { Norm } from "../types";
+import React, { useState } from 'react';
+import Input from '../ui/input/input';
+import Button from '../ui/button/button';
+import TextArea from '../ui/textarea/textarea';
+import { useAdminStore } from '../stores/admin-store';
+import { useAuthStore } from '../stores/auth-store';
+import { useToast } from '../hooks/use-toast';
+import { Norm } from '../types';
 
 interface AddQuizFormProps {
-  chapterId: number;
-  courseId: number;
   onClose: () => void;
+  chapterId: string;
+  courseId: string;
 }
 
-const AddQuizForm: React.FC<AddQuizFormProps> = ({
-  chapterId,
-  courseId,
-  onClose,
-}) => {
-  const { token } = useAuthStore();
-  const { createQuiz } = useAdminStore();
-  const { norms } = useAdminStore();
-  const { toast } = useToast();
-
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [image, setImage] = useState("");
+const AddQuizForm = ({ onClose, chapterId, courseId }: AddQuizFormProps) => {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [image, setImage] = useState('');
   const [selectedNormId, setSelectedNormId] = useState<number | null>(null);
-  const [normSearch, setNormSearch] = useState("");
+  const [normSearch, setNormSearch] = useState('');
   const [showNormDropdown, setShowNormDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+
+  const { createQuiz } = useAdminStore();
+  const norms = useAdminStore(s => s.norms)
+  const { token } = useAuthStore();
+  const { toast } = useToast();
 
   const filteredNorms = norms.filter(norm =>
     norm.scale_name.toLowerCase().includes(normSearch.toLowerCase()) ||

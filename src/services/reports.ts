@@ -4,10 +4,10 @@ const REPORTS_HOST = process.env.NEXT_PUBLIC_AWS_REPORTS_HOST;
 
 export const submitSingleAnswer = async (
   token: string,
-  courseId: number,
-  chapterId: number,
-  quizId: number,
-  questionId: number,
+  courseId: string,
+  chapterId: string,
+  quizId: string,
+  questionId: string,
   selectedOption: number,
   score: number
 ) => {
@@ -34,7 +34,7 @@ export const submitSingleAnswer = async (
 
 export const fetchCourseReport = async (
   token: string,
-  courseId: number,
+  courseId: string,
 ) => {
   const url = `https://${REPORTS_HOST}/default/quizSubmission?action=getReportByCourse`;
   const options = {
@@ -54,7 +54,7 @@ export const fetchCourseReport = async (
 
 export const fetchSubmissions = async (
   token: string,
-  courseId: number,
+  courseId: string,
 ) => {
   const url = `https://${REPORTS_HOST}/default/quizSubmission?action=getSubmissions`;
   const options = {

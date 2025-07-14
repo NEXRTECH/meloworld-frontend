@@ -1,30 +1,21 @@
 "use client";
+import { useAuthStore } from "@/components/stores/auth-store";
+import { useOrgStore } from "@/components/stores/org-store";
 import Button from "@/components/ui/button/button";
 import Card from "@/components/ui/card/card";
 import { Progress } from "@/components/ui/progress/progress";
 import Table from "@/components/ui/table/table";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const ScalesTable = () => {
-  const [scales] = useState<Record<string, any>[]>([
-    {
-      id: 1,
-      scale: "ABC Scale",
-      progress: 70,
-    },
-    {
-      id: 2,
-      scale: "XYZ Scale",
-      progress: 90,
-    },
-    {
-      id: 3,
-      scale: "Health Scale",
-      progress: 40,
-    },
-  ]);
+  const { token } = useAuthStore();
+  const { getAssignedCourses } = useOrgStore();
+  const courses = useOrgStore((s) => s.assignedCourses);
+  useEffect(() => {
+    if (token) getAssignedCourses(token);
+  }, [token]);
 
-  const headings = ["Scale", "Progress"];
+  const headings = ["Scale", "Description"];
 
   return (
     <Card className="flex bg-white flex-col items-start gap-5 p-5 justify-start w-full h-full">
@@ -35,14 +26,11 @@ const ScalesTable = () => {
         </Button>
       </div>
       <Table headings={headings}>
-        {scales.map((row, rowIdx) => (
-          <tr key={row.id || rowIdx}>
-            <td>{row.scale}</td>
+        {courses.map((row, rowIdx) => (
+          <tr key={row._id || rowIdx}>
+            <td>{row.title}</td>
             <td>
-              <div className="w-40 flex gap-2 justify-center items-center">
-                <Progress value={row.progress} />
-                <p className="font-semibold text-xs">{row.progress}%</p>
-              </div>
+              <p className="text-xs">{row.description}</p>
             </td>
           </tr>
         ))}

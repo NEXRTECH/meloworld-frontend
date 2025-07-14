@@ -19,37 +19,37 @@ import {
   fetchSubmissions,
   submitSingleAnswer,
 } from "@/services/reports";
-import { error } from "console";
+import { getAllOrganizations } from "@/services/organizations";
 
 export interface CandidateStoreState {
   // Add your state properties here
   assessments: Course[];
   organizations: Organization[];
-  reports: Record<number, Report>;
-  quizQuestionsCourseDict: Record<number, Question[]>;
-  submissionCourseDict: Record<number, Submission[]>;
-  courseQuizMetadataDict: Record<number, Quiz[]>;
+  reports: Record<string, Report>;
+  quizQuestionsCourseDict: Record<string, Question[]>;
+  submissionCourseDict: Record<string, Submission[]>;
+  courseQuizMetadataDict: Record<string, Quiz[]>;
   // Add your actions/methods here
   setOrganizations: (organizations: Organization[]) => void;
-  setReports: (reports: Record<number, Report>) => void;
-  setCourseQuizMetadataDict: (courseId: number, quizzes: Quiz[]) => void;
+  setReports: (reports: Record<string, Report>) => void;
+  setCourseQuizMetadataDict: (courseId: string, quizzes: Quiz[]) => void;
   setSubmissionCourseDict: (
-    courseId: number,
+    courseId: string,
     submissions: Submission[]
   ) => void;
-  getCourseReport: (token: string, courseId: number) => Promise<void>;
-  getOrganizations: (token?: string) => Promise<void>;
+  getCourseReport: (token: string, courseId: string) => Promise<void>;
+  getOrganizations: () => Promise<void>;
   setAssessments: (assessments: Course[]) => void;
   getAssessments: (token: string) => Promise<void>;
-  getQuestionsByCourseId: (token: string, courseId: number) => Promise<void>;
-  getSubmissionsByCourseId: (token: string, courseId: number) => Promise<void>;
-  setQuizQuestionsCourseDict: (courseId: number, questions: Question[]) => void;
+  getQuestionsByCourseId: (token: string, courseId: string) => Promise<void>;
+  getSubmissionsByCourseId: (token: string, courseId: string) => Promise<void>;
+  setQuizQuestionsCourseDict: (courseId: string, questions: Question[]) => void;
   submitAnswer: (
     token: string,
-    courseId: number,
-    chapterId: number,
-    quizId: number,
-    questionId: number,
+    courseId: string,
+    chapterId: string,
+    quizId: string,
+    questionId: string,
     selectedOption: number,
     score: number
   ) => Promise<void>;
@@ -68,50 +68,36 @@ export const useCandidateStore = create<CandidateStoreState>()(
         submissionCourseDict: {},
         courseQuizMetadataDict: {},
         // Define actions
-        setReports: (reports: Record<number, Report>) => set({ reports }),
+        setReports: (reports: Record<string, Report>) => set({ reports }),
         setOrganizations: (organizations: Organization[]) =>
           set({ organizations }),
         setAssessments: (assessments: Course[]) => set({ assessments }),
-        setCourseQuizMetadataDict: (courseId: number, quizzes: Quiz[]) =>
+        setCourseQuizMetadataDict: (courseId: string, quizzes: Quiz[]) =>
           set((state) => ({
             courseQuizMetadataDict: {
               ...state.courseQuizMetadataDict,
               [courseId]: quizzes,
             },
           })),
-        getOrganizations: async (token: string) => {
-          const dummyData: Organization[] = [
-            {
-              organization_id: 1,
-              organization_name: "Host2",
-              organization_type: "Corporate",
-              contact_email: "admin1@acmecorp.com",
-              is_approved: false,
-              is_enabled: true,
-              created_at: "2025-05-05T18:49:52.677Z",
-              updated_at: "2025-05-05T18:49:52.677Z",
-              metadata: null,
-            },
-            {
-              organization_id: 3,
-              organization_name: "Test International",
-              organization_type: "Corporate",
-              contact_email: "admin1@acmecorp.com",
-              is_approved: false,
-              is_enabled: false,
-              created_at: "2025-05-21T14:12:09.237Z",
-              updated_at: "2025-05-21T16:42:05.684Z",
-              metadata: null,
-            },
-          ];
-          set({ organizations: dummyData });
+        getOrganizations: async () => {
+          try {
+            const response = await getAllOrganizations();
+            if(response.ok) {
+              const data = await response.data;
+              const organizations: Organization[] = data.organizations ?? [];
+              set({organizations})
+            }
+          } catch (err) {
+            console.error(err);
+            throw err;
+          }
         },
         getAssessments: async (token: string) => {
           try {
             const response = await getAllAssessments(token);
             if (response.ok) {
               const data = await response.json();
-              const assessments: Quiz[] = data.courses ?? [];
+              const assessments: Course[] = data.courses ?? [];
               console.debug("Fetched assessments:", assessments);
               set({ assessments });
             }
@@ -120,7 +106,7 @@ export const useCandidateStore = create<CandidateStoreState>()(
             throw error;
           }
         },
-        getQuestionsByCourseId: async (token: string, courseId: number) => {
+        getQuestionsByCourseId: async (token: string, courseId: string) => {
           try {
             const response = await getAllQuizzesByCourse(token, courseId);
             if (response.ok) {
@@ -173,7 +159,7 @@ export const useCandidateStore = create<CandidateStoreState>()(
             throw error;
           }
         },
-        getSubmissionsByCourseId: async (token: string, courseId: number) => {
+        getSubmissionsByCourseId: async (token: string, courseId: string) => {
           try {
             const response = await fetchSubmissions(token, courseId);
             if (response.ok) {
@@ -189,7 +175,7 @@ export const useCandidateStore = create<CandidateStoreState>()(
             }
           } catch {}
         },
-        setQuizQuestionsCourseDict: (courseId: number, questions: Question[]) =>
+        setQuizQuestionsCourseDict: (courseId: string, questions: Question[]) =>
           set((state) => ({
             quizQuestionsCourseDict: {
               ...state.quizQuestionsCourseDict,
@@ -198,13 +184,14 @@ export const useCandidateStore = create<CandidateStoreState>()(
           })),
         submitAnswer: async (
           token: string,
-          courseId: number,
-          chapterId: number,
-          quizId: number,
-          questionId: number,
+          courseId: string,
+          chapterId: string,
+          quizId: string,
+          questionId: string,
           selectedOption: number,
           score: number
         ) => {
+          console.log(selectedOption, score)
           try {
             const response = await submitSingleAnswer(
               token,
@@ -225,7 +212,7 @@ export const useCandidateStore = create<CandidateStoreState>()(
             throw error;
           }
         },
-        getCourseReport: async (token: string, courseId: number) => {
+        getCourseReport: async (token: string, courseId: string) => {
           try {
             const response = await fetchCourseReport(token, courseId);
             if (response.ok) {
@@ -242,7 +229,7 @@ export const useCandidateStore = create<CandidateStoreState>()(
           }
         },
         setSubmissionCourseDict: (
-          courseId: number,
+          courseId: string,
           submissions: Submission[]
         ) =>
           set((state) => ({

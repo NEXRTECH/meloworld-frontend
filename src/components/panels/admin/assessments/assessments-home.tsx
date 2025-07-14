@@ -55,8 +55,8 @@ const AssessmentsHome: React.FC = () => {
         <Table headings={["Title", "Description", "Created At", "Updated At"]}>
           {assessments.map((a) => (
             <AssessmentDropdownRow
-              key={a.id}
-              assessmentId={a.id}
+              key={a._id}
+              assessmentId={a._id}
               title={a.title}
               description={a.description}
               createdAt={a.created_at}

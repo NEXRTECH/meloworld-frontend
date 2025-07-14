@@ -19,25 +19,25 @@ export interface TherapistStoreState {
   // Add your actions/methods here
   setSessions: (sessions: Session[]) => void;
   fetchSessionsByTherapistId: (
-    therapistId: number,
+    therapistId: string,
     status?: "Completed" | "Scheduled" | "In Progress" | "Cancelled"
   ) => Promise<void>;
-  getSession: (sessionId: number) => Promise<void>;
+  getSession: (sessionId: string) => Promise<void>;
   updateSession: (
-    sessionIdd: number,
+    sessionId: string,
     update: Partial<Session>
   ) => Promise<void>;
-  startSession: (sessionId: number) => Promise<void>;
-  endSession: (sessionId: number, feedback: string) => Promise<void>;
-  cancelSession: (sessionId: number) => Promise<void>;
+  startSession: (sessionId: string) => Promise<void>;
+  endSession: (sessionId: string, feedback: string) => Promise<void>;
+  cancelSession: (sessionId: string) => Promise<void>;
   createSession: (
-    therapistId: number,
+    therapistId: string,
     startTime: string,
     metadata: Record<string, any>,
-    patientId?: number
+    patientId?: string
   ) => Promise<void>;
 
-  fetchPatientsByTherapistId: (therapistId: number) => Promise<void>;
+  fetchPatientsByTherapistId: (therapistId: string) => Promise<void>;
 }
 
 export const useTherapistStore = create<TherapistStoreState>()(
@@ -51,11 +51,11 @@ export const useTherapistStore = create<TherapistStoreState>()(
 
         // Patients actions
         setPatients: (patients) => set({ patients: patients }),
-        fetchPatientsByTherapistId: async (therapistId: number) => {},
+        fetchPatientsByTherapistId: async (therapistId: string) => {},
 
         // Sessions actions
         setSessions: (sessions) => set({ sessions: sessions }),
-        fetchSessionsByTherapistId: async (therapistId: number, status?: "Completed" | "Scheduled" | "In Progress" | "Cancelled") => {
+        fetchSessionsByTherapistId: async (therapistId: string, status?: "Completed" | "Scheduled" | "In Progress" | "Cancelled") => {
           try {
             const response = await getAllSessionsByTherapist(therapistId, status);
             if (response && response.status === 200) {
@@ -67,7 +67,7 @@ export const useTherapistStore = create<TherapistStoreState>()(
           }
         },
 
-        getSession: async (sessionId: number) => {
+        getSession: async (sessionId: string) => {
           console.log("Fetching session with ID:", sessionId);
           try {
             const response = await getSession(sessionId);
@@ -84,7 +84,7 @@ export const useTherapistStore = create<TherapistStoreState>()(
           }
         },
 
-        updateSession: async (sessionId: number, update: Partial<Session>) => {
+        updateSession: async (sessionId: string, update: Partial<Session>) => {
           console.log("Updating session with ID:", sessionId);
           console.log("Update data:", update);
           try {
@@ -102,7 +102,7 @@ export const useTherapistStore = create<TherapistStoreState>()(
           }
         },
 
-        startSession: async (sessionId: number) => {
+        startSession: async (sessionId: string) => {
           console.log("Starting session with ID:", sessionId);
           try {
             const response = await startSession(sessionId);
@@ -119,7 +119,7 @@ export const useTherapistStore = create<TherapistStoreState>()(
           }
         },
 
-        endSession: async (sessionId: number, feedback: string) => {
+        endSession: async (sessionId: string, feedback: string) => {
           console.log("Ending session with ID:", sessionId);
           try {
             const response = await endSession(sessionId, feedback);
@@ -136,7 +136,7 @@ export const useTherapistStore = create<TherapistStoreState>()(
           }
         },
 
-        cancelSession: async (sessionId: number) => {
+        cancelSession: async (sessionId: string) => {
           console.log("Cancelling session with ID:", sessionId);
           try {
             const response = await cancelSession(sessionId);
@@ -154,10 +154,10 @@ export const useTherapistStore = create<TherapistStoreState>()(
         },
 
         createSession: async (
-          therapistId: number,
+          therapistId: string,
           startTime: string,
           metadata: Record<string, any>,
-          patientId: number = 1
+          patientId: string = "1"
         ) => {
           try {
             const response = await createSession(

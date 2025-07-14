@@ -47,7 +47,7 @@ const SessionPage = () => {
     useTherapistStore((state) => state);
   const sessions = useTherapistStore((state) => state.sessions);
   const session = sessions.find(
-    (session) => session.session_id === Number(sessionId)
+    (session) => session.session_id === sessionId
   );
   const { toast } = useToast();
   const [feedback, setFeedback] = React.useState("");

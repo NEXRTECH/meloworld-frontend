@@ -15,12 +15,12 @@ const ReportPage = () => {
   const { getCourseReport, reports } = useCandidateStore();
   const [activeScaleIndex, setActiveScaleIndex] = useState(0);
 
-  const reportData = reports[Number(courseId)];
+  const reportData = reports[courseId as string];
   const activeScale = reportData?.scales[activeScaleIndex];
 
   useEffect(() => {
     if (token) {
-      getCourseReport(token, Number(courseId));
+      getCourseReport(token, courseId as string);
     }
   }, [token]);
 

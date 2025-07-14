@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dialog/dialog";
 
 interface AssessmentDropdownRowProps {
-  assessmentId: number;
+  assessmentId: string;
   title: string;
   description: string;
   createdAt: string;
@@ -88,7 +88,7 @@ const AssessmentDropdownRow: React.FC<AssessmentDropdownRowProps> = ({
                   <Button
                     onClick={() =>
                       router.push(
-                        `/admin/assessments/${assessmentId}/chapter/${c.id}`
+                        `/admin/assessments/${assessmentId}/chapter/${c._id}`
                       )
                     }
                     size="xs"

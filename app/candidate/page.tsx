@@ -152,7 +152,7 @@ const CandidateHome: React.FC = () => {
             className="flex gap-10 px-6 lg:px-8"
           >
             {assessments.map((assessment) => (
-              <div key={assessment.id} className="min-w-[80vw] sm:min-w-[45vw] md:min-w-[30vw] lg:min-w-[28vw]">
+              <div key={assessment._id} className="min-w-[80vw] sm:min-w-[45vw] md:min-w-[30vw] lg:min-w-[28vw]">
                 <AliveAssessmentCard assessment={assessment} />
               </div>
             ))}

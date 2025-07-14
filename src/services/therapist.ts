@@ -1,9 +1,9 @@
 import { Session } from "@/components/types";
 import { signAndRequest } from "@/lib/aws-axios";
 
-const PATIENT_HOST = process.env.NEXT_PUBLIC_AWS_PATIENT_HOST as string;
-const THERAPIST_HOST = process.env.NEXT_PUBLIC_AWS_THERAPIST_HOST as string;
-const SESSION_HOST = process.env.NEXT_PUBLIC_AWS_SESSION_HOST as string;
+const PATIENT_HOST = process.env.NEXT_PUBLIC_AWS_PATIENT_HOST!;
+const THERAPIST_HOST = process.env.NEXT_PUBLIC_AWS_THERAPIST_HOST!;
+const SESSION_HOST = process.env.NEXT_PUBLIC_AWS_SESSION_HOST!;
 
 export const loginTherapist = async (email: string, password: string) => {
   const response = await signAndRequest(
@@ -16,7 +16,7 @@ export const loginTherapist = async (email: string, password: string) => {
   return response;
 };
 
-export const getPatientById = async (patientId: number) => {
+export const getPatientById = async (patientId: string) => {
   const response = await signAndRequest(
     "POST",
     {},
@@ -27,7 +27,7 @@ export const getPatientById = async (patientId: number) => {
   return response;
 };
 
-export const getTherapistById = async (therapistId: number) => {
+export const getTherapistById = async (therapistId: string) => {
   const payload = { therapist_id: therapistId };
   const response = await signAndRequest(
     "POST",
@@ -39,7 +39,7 @@ export const getTherapistById = async (therapistId: number) => {
   return response;
 };
 
-export const getAssignedPatientsByTherapistId = async (therapistId: number) => {
+export const getAssignedPatientsByTherapistId = async (therapistId: string) => {
   const payload = { therapist_id: therapistId };
   const response = await signAndRequest(
     "POST",
@@ -52,28 +52,23 @@ export const getAssignedPatientsByTherapistId = async (therapistId: number) => {
 };
 
 export const getAllSessionsByTherapist = async (
-  therapistId: number,
+  therapistId: string,
   status?: "Completed" | "Scheduled" | "In Progress" | "Cancelled"
 ) => {
-  const payload = {
-    therapist_id: therapistId,
-    session_status: status,
-    limit: 100,
-    offset: 0,
-  };
+  const payload = { therapist_id: therapistId, status };
   const response = await signAndRequest(
     "POST",
     {},
     SESSION_HOST,
-    "/default/sessionHandlerAPI?action=listSessions",
+    "/default/sessionHandlerAPI?action=getSessionsByTherapist",
     payload
   );
   return response;
 };
 
 export const createSession = async (
-  patientId: number,
-  therapistId: number,
+  patientId: string,
+  therapistId: string,
   startTime: string,
   metadata: Record<string, any>
 ) => {
@@ -81,7 +76,7 @@ export const createSession = async (
     patient_id: patientId,
     therapist_id: therapistId,
     start_time: startTime,
-    metadata: metadata,
+    metadata,
   };
   const response = await signAndRequest(
     "POST",
@@ -93,12 +88,8 @@ export const createSession = async (
   return response;
 };
 
-export const getSession = async (
-  sessionId: number,
-) => {
-  const payload = {
-    session_id: sessionId,
-  };
+export const getSession = async (sessionId: string) => {
+  const payload = { session_id: sessionId };
   const response = await signAndRequest(
     "POST",
     {},
@@ -110,13 +101,10 @@ export const getSession = async (
 };
 
 export const updateSession = async (
-  sessionId: number,
-  update: Partial<Session>
+  sessionId: string,
+  update: Record<string, any>
 ) => {
-  const payload = {
-    session_id: sessionId,
-    ...update,
-  };
+  const payload = { session_id: sessionId, ...update };
   const response = await signAndRequest(
     "POST",
     {},
@@ -127,12 +115,8 @@ export const updateSession = async (
   return response;
 };
 
-export const startSession = async (
-  sessionId: number,
-) => {
-  const payload = {
-    session_id: sessionId,
-  };
+export const startSession = async (sessionId: string) => {
+  const payload = { session_id: sessionId };
   const response = await signAndRequest(
     "POST",
     {},
@@ -143,31 +127,20 @@ export const startSession = async (
   return response;
 };
 
-export const endSession = async (
-  sessionId: number,
-  feedback: string,
-) => {
-  const payload = {
-    session_id: sessionId,
-    end_time: new Date().toISOString(),
-    feedback: feedback,
-  };
+export const endSession = async (sessionId: string, feedback: string) => {
+  const payload = { session_id: sessionId, feedback };
   const response = await signAndRequest(
     "POST",
     {},
     SESSION_HOST,
-    "/default/sessionHandlerAPI?action=completeSession",
+    "/default/sessionHandlerAPI?action=endSession",
     payload
   );
   return response;
 };
 
-export const cancelSession = async (
-  sessionId: number,
-) => {
-  const payload = {
-    session_id: sessionId,
-  };
+export const cancelSession = async (sessionId: string) => {
+  const payload = { session_id: sessionId };
   const response = await signAndRequest(
     "POST",
     {},

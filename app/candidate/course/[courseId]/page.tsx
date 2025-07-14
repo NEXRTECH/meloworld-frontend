@@ -47,7 +47,7 @@ const CandidateCoursePage: React.FC = () => {
 
   React.useEffect(() => {
     if (token && courseId) {
-      const id = parseInt(courseId as string);
+      const id = courseId as string;
       if (!quizQuestionsCourseDict[id]) {
         getQuestionsByCourseId(token, id);
       }
@@ -55,10 +55,10 @@ const CandidateCoursePage: React.FC = () => {
     }
   }, [token, courseId, getQuestionsByCourseId, getSubmissionsByCourseId, quizQuestionsCourseDict]);
 
-  const courseIdNumber = parseInt(courseId as string);
-  const totalQuizzes = quizQuestionsCourseDict[courseIdNumber]?.length ?? 0;
-  const completedQuizzes = submissionCourseDict[courseIdNumber]?.length ?? 0;
-  const assessment = assessments.find((assessment) => assessment.id === courseIdNumber);
+  const courseIdString = courseId as string;
+  const totalQuizzes = quizQuestionsCourseDict[courseIdString]?.length ?? 0;
+  const completedQuizzes = submissionCourseDict[courseIdString]?.length ?? 0;
+  const assessment = assessments.find((assessment) => assessment._id === courseIdString);
   const isAssessmentComplete = totalQuizzes > 0 && totalQuizzes === completedQuizzes;
   const progressPercentage = totalQuizzes > 0 ? Math.round((completedQuizzes / totalQuizzes) * 100) : 0;
 
@@ -147,7 +147,7 @@ const CandidateCoursePage: React.FC = () => {
         <div className="lg:col-span-2">
           <h2 className="text-3xl font-bold mb-8">Traits Assessed</h2>
           <div className="relative pl-8 border-l-2 border-dashed border-gray-300">
-            {courseQuizMetadataDict[Number(courseId)]?.map((trait, index) => (
+            {courseQuizMetadataDict[courseIdString]?.map((trait, index) => (
               <motion.div
                 key={index}
                 initial={{ opacity: 0, x: 50 }}
