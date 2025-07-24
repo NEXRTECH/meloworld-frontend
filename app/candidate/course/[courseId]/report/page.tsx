@@ -12,7 +12,8 @@ const ReportPage = () => {
   const router = useRouter();
   const { courseId } = useParams();
   const token = useAuthStore((s) => s.token);
-  const { getCourseReport, reports } = useCandidateStore();
+  const { getCourseReport, assessments } = useCandidateStore();
+  const reports = useCandidateStore(s => s.reports)
   const [activeScaleIndex, setActiveScaleIndex] = useState(0);
 
   const reportData = reports[courseId as string];
@@ -42,7 +43,7 @@ const ReportPage = () => {
             Assessment Report
           </p>
           <h1 className="text-4xl sm:text-5xl font-bold mt-2">
-            Your Personality Insights
+            {assessments.find((a) => a._id === courseId)?.title}
           </h1>
         </div>
 

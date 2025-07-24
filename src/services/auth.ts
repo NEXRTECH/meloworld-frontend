@@ -147,7 +147,7 @@ export const loginService = {
       "POST",
       {},
       userTypeHost["therapist"],
-      "/default/psychometricUser/user?action=login",
+      "/default/therapistHandlerAPI?action=loginTherapist",
       payload
     );
 
