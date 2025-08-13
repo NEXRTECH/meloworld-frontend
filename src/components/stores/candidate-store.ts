@@ -44,6 +44,7 @@ export interface CandidateStoreState {
   getQuestionsByCourseId: (token: string, courseId: string) => Promise<void>;
   getSubmissionsByCourseId: (token: string, courseId: string) => Promise<void>;
   setQuizQuestionsCourseDict: (courseId: string, questions: Question[]) => void;
+  getChapterIdByQuizId: (courseId: string, quizId: string) => string;
   submitAnswer: (
     token: string,
     courseId: string,
@@ -59,7 +60,7 @@ export interface CandidateStoreState {
 export const useCandidateStore = create<CandidateStoreState>()(
   devtools(
     persist(
-      (set) => ({
+      (set, get) => ({
         // Initialize your state
         assessments: [],
         reports: {},
@@ -158,6 +159,9 @@ export const useCandidateStore = create<CandidateStoreState>()(
             console.error("Error fetching questions by course ID:", error);
             throw error;
           }
+        },
+        getChapterIdByQuizId: (courseId: string, quizId: string) => {
+          return get().courseQuizMetadataDict[courseId].find(quiz => quiz.id === quizId)?.chapter_id ?? "";
         },
         getSubmissionsByCourseId: async (token: string, courseId: string) => {
           try {

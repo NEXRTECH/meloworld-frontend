@@ -31,7 +31,7 @@ const AssessmentForm: React.FC = () => {
 
   const submissionCourseDict = useCandidateStore((s) => s.submissionCourseDict);
 
-  const { getQuestionsByCourseId, submitAnswer } = useCandidateStore();
+  const { getQuestionsByCourseId, submitAnswer, getChapterIdByQuizId } = useCandidateStore();
   const [pageIndex, setPageIndex] = useState(0);
   const [current, setCurrent] = useState<Question | null>(null);
   const [score, setScore] = useState<number>(0);
@@ -85,12 +85,11 @@ const AssessmentForm: React.FC = () => {
   const goPrev = () => setPageIndex((i) => Math.max(0, i - 1));
   const goNext = () => {
     // Submit answer call
-    
     if (token && current) {
       submitAnswer(
         token,
         courseId as string,
-        current.chapter_id ?? "6casda2q21",
+        getChapterIdByQuizId(courseId as string, current.quiz_id!),
         current.quiz_id!,
         current.id,
         currentAnswer,
@@ -302,7 +301,7 @@ const AssessmentForm: React.FC = () => {
                           submitAnswer(
                             token,
                             courseId as string,
-                            current.chapter_id ?? "6casda2q21",
+                            getChapterIdByQuizId(courseId as string, current.quiz_id!),
                             current.quiz_id!,
                             current.id,
                             currentAnswer,
