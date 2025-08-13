@@ -57,7 +57,7 @@ export const useTherapistStore = create<TherapistStoreState>()(
         setSessions: (sessions) => set({ sessions: sessions }),
         fetchSessionsByTherapistId: async (therapistId: string, status?: "Completed" | "Scheduled" | "In Progress" | "Cancelled") => {
           try {
-            const response = await getAllSessionsByTherapist(therapistId, status);
+            const response = await getAllSessionsByTherapist(therapistId);
             if (response && response.status === 200) {
               const data = await response.data.sessions;
               set({ sessions: data });
@@ -157,11 +157,9 @@ export const useTherapistStore = create<TherapistStoreState>()(
           therapistId: string,
           startTime: string,
           metadata: Record<string, any>,
-          patientId: string = "1"
         ) => {
           try {
             const response = await createSession(
-              patientId,
               therapistId,
               startTime,
               metadata

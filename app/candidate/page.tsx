@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useAnimation } from "framer-motion";
 
 // The new "alive" card component
 import { AliveAssessmentCard } from "@/components/ui/card/calm-assessment-card";
@@ -10,7 +10,7 @@ import homeImg from "@/assets/candidate-home-illustration.png";
 import { useAuthStore } from "@/components/stores/auth-store";
 import { useCandidateStore } from "@/components/stores/candidate-store";
 import Button from "@/components/ui/button/button";
-import { FiActivity, FiClipboard } from "react-icons/fi";
+import { FiActivity, FiClipboard, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
 const CandidateHome: React.FC = () => {
   const { token } = useAuthStore();
@@ -19,8 +19,12 @@ const CandidateHome: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
   const assessmentsSectionRef = useRef<HTMLDivElement>(null);
+  const itemsRef = useRef<HTMLDivElement>(null);
   
   const [carouselWidth, setCarouselWidth] = useState(0);
+  const [stepWidth, setStepWidth] = useState(0);
+  const [currentX, setCurrentX] = useState(0);
+  const controls = useAnimation();
 
   // --- Scroll Animation Logic for "Curtain Reveal" ---
   const { scrollYProgress } = useScroll({
@@ -46,8 +50,62 @@ const CandidateHome: React.FC = () => {
     }
   }, [assessments]);
 
+  // Compute step width (one card + gap) and keep it updated on resize
+  useEffect(() => {
+    const computeStep = () => {
+      const container = itemsRef.current;
+      if (!container) return;
+      const firstCard = container.querySelector('[data-carousel-card]') as HTMLElement | null;
+      const firstWidth = firstCard ? firstCard.offsetWidth : 0;
+      const gap = parseFloat(getComputedStyle(container).columnGap || "0");
+      setStepWidth(firstWidth + gap);
+    };
+    computeStep();
+    window.addEventListener("resize", computeStep);
+    return () => window.removeEventListener("resize", computeStep);
+  }, [assessments]);
+
+  // Clamp currentX whenever the carouselWidth changes
+  useEffect(() => {
+    const clamped = Math.max(-carouselWidth, Math.min(0, currentX));
+    if (clamped !== currentX) {
+      setCurrentX(clamped);
+      controls.set({ x: clamped });
+    }
+  }, [carouselWidth, currentX, controls]);
+
   const scrollToAssessments = () => {
     assessmentsSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleNext = () => {
+    if (stepWidth <= 0 || carouselWidth <= 0) return;
+    const epsilon = 8;
+    const atEnd = Math.abs(currentX + carouselWidth) <= epsilon;
+    if (atEnd) {
+      const wrapped = 0;
+      setCurrentX(wrapped);
+      controls.start({ x: wrapped, transition: { type: "spring", stiffness: 300, damping: 30 } });
+      return;
+    }
+    const next = Math.max(currentX - stepWidth, -carouselWidth);
+    setCurrentX(next);
+    controls.start({ x: next, transition: { type: "spring", stiffness: 300, damping: 30 } });
+  };
+
+  const handlePrev = () => {
+    if (stepWidth <= 0 || carouselWidth <= 0) return;
+    const epsilon = 8;
+    const atStart = Math.abs(currentX) <= epsilon;
+    if (atStart) {
+      const wrapped = -carouselWidth;
+      setCurrentX(wrapped);
+      controls.start({ x: wrapped, transition: { type: "spring", stiffness: 300, damping: 30 } });
+      return;
+    }
+    const prev = Math.min(currentX + stepWidth, 0);
+    setCurrentX(prev);
+    controls.start({ x: prev, transition: { type: "spring", stiffness: 300, damping: 30 } });
   };
 
   // --- Animation Variants ---
@@ -141,23 +199,50 @@ const CandidateHome: React.FC = () => {
       <div ref={assessmentsSectionRef} className="relative z-0 bg-gray-50 pt-16 sm:pt-24 pb-24 px-0">
         <div className="text-center mb-16 max-w-3xl mx-auto px-6 lg:px-8">
           <h2 className="text-4xl sm:text-5xl font-bold">Begin Your Journey</h2>
-          <p className="mt-4 text-lg opacity-70">Each path offers insights into your unique strengths. Drag the cards to explore.</p>
+          <p className="mt-4 text-lg opacity-70">Each path offers insights into your unique strengths. Use arrows or drag to explore.</p>
         </div>
         
-        <motion.div ref={carouselRef} className="cursor-grab w-full">
-          <motion.div
-            drag="x"
-            dragConstraints={{ right: 0, left: -carouselWidth }}
-            whileTap={{ cursor: "grabbing" }}
-            className="flex gap-10 px-6 lg:px-8"
+        <div className="relative w-full">
+          <button
+            type="button"
+            aria-label="Previous"
+            onClick={handlePrev}
+            className="flex items-center justify-center absolute lg:left-10 left-5 top-1/2 -translate-y-1/2 backdrop-blur-lg z-10 h-10 w-10 rounded-full bg-white/50 shadow border hover:bg-gray-50 active:scale-95 transition"
           >
-            {assessments.map((assessment) => (
-              <div key={assessment._id} className="min-w-[80vw] sm:min-w-[45vw] md:min-w-[30vw] lg:min-w-[28vw]">
-                <AliveAssessmentCard assessment={assessment} />
-              </div>
-            ))}
+            <FiChevronLeft className="text-2xl" />
+          </button>
+          <button
+            type="button"
+            aria-label="Next"
+            onClick={handleNext}
+            className="flex items-center justify-center absolute lg:right-10 right-5 top-1/2 -translate-y-1/2 z-10 backdrop-blur-lg h-10 w-10 rounded-full bg-white/50 shadow border hover:bg-gray-50 active:scale-95 transition"
+          >
+            <FiChevronRight className="text-2xl" />
+          </button>
+
+          <motion.div ref={carouselRef} className="cursor-grab w-full overflow-hidden">
+            <motion.div
+              ref={itemsRef}
+              drag="x"
+              dragConstraints={{ right: 0, left: -carouselWidth }}
+              whileTap={{ cursor: "grabbing" }}
+              animate={controls}
+              onDragEnd={(event, info) => {
+                const proposed = currentX + info.offset.x;
+                const clamped = Math.max(-carouselWidth, Math.min(0, proposed));
+                setCurrentX(clamped);
+                controls.set({ x: clamped });
+              }}
+              className="flex gap-10 px-6 lg:px-8"
+            >
+              {assessments.map((assessment) => (
+                <div data-carousel-card key={assessment._id} className="min-w-[80vw] sm:min-w-[45vw] md:min-w-[30vw] lg:min-w-[28vw]">
+                  <AliveAssessmentCard assessment={assessment} />
+                </div>
+              ))}
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

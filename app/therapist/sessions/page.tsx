@@ -166,7 +166,7 @@ const SessionsPage: React.FC = () => {
       return;
     }
 
-    createSession(therapist_id, newSessionDate, {}, "1")
+    createSession(therapist_id, newSessionDate, {})
       .then(() => {
         toast({
           title: "Success",
@@ -258,7 +258,7 @@ const SessionsPage: React.FC = () => {
                 </td>
               </tr>
             ) : (
-              sessions.map((session) => {
+              sessions.filter(s => s.session_status === filter).map((session) => {
                 return (
                   <tr
                     key={session.session_id}

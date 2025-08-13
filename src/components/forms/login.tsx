@@ -13,7 +13,7 @@ import { UserRole } from "../types"; // Assuming types are centralized
 
 // Services & Icons
 import { loginService } from "../../services/auth";
-import { IoKey, IoMail } from "react-icons/io5";
+import { IoKey, IoMail, IoEye, IoEyeOff } from "react-icons/io5";
 import { CgSpinner } from "react-icons/cg";
 import { AnimatePresence, motion } from "framer-motion";
 import { FormState } from "./signup";
@@ -35,6 +35,7 @@ const LoginForm: React.FC<LoginProps> = ({ userRole }) => {
     email: { value: "", error: "" },
     password: { value: "", error: "" },
   });
+  const [showPassword, setShowPassword] = useState(false);
 
   // Memoized value to determine if the form is valid for submission
   const isFormValid = useMemo(() => {
@@ -188,11 +189,14 @@ const LoginForm: React.FC<LoginProps> = ({ userRole }) => {
         <div className="space-y-1">
           <Input
             name="password"
-            type="password"
+            type={showPassword ? "text" : "password"}
             onChange={handleFormChange}
             value={formState.password.value}
             placeholder="Password"
             icon={<IoKey />}
+            rightIcon={showPassword ? <IoEyeOff /> : <IoEye />}
+            onRightIconClick={() => setShowPassword((prev) => !prev)}
+            rightIconAriaLabel={showPassword ? "Hide password" : "Show password"}
             aria-invalid={!!formState.password.error}
           />
           <AnimatePresence>

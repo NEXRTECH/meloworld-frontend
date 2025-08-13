@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import heroImg from "@/assets/personality.png";
 import { useAuthStore } from "@/components/stores/auth-store";
@@ -9,30 +9,8 @@ import { FiChevronLeft, FiCheck } from "react-icons/fi";
 import { PiPlayFill } from "react-icons/pi";
 import { BsChevronCompactRight } from "react-icons/bs";
 import { useCandidateStore } from "@/components/stores/candidate-store";
-
-// Data for the traits to be displayed
-const assessedTraits = [
-  {
-    title: "Openness",
-    description: "This trait reflects the extent to which individuals are creative, adaptable, and enthusiastic about new ideas and challenges.",
-  },
-  {
-    title: "Conscientiousness",
-    description: "This trait reflects the extent to which individuals are systematic, goal-oriented, and disciplined in their approach to tasks.",
-  },
-  {
-    title: "Extraversion",
-    description: "This trait reflects the extent to which individuals derive comfort and energy from social interactions and collaboration.",
-  },
-  {
-    title: "Agreeableness",
-    description: "This trait reflects the extent to which individuals foster positive relationships and cooperate effectively with colleagues.",
-  },
-  {
-    title: "Emotional Stability",
-    description: "This trait reflects the extent to which individuals remain calm and composed in stressful work situations.",
-  },
-];
+import Spinner from "@/components/ui/spinner";
+import { CgSpinner } from "react-icons/cg";
 
 const CandidateCoursePage: React.FC = () => {
   const { token } = useAuthStore();
@@ -45,13 +23,17 @@ const CandidateCoursePage: React.FC = () => {
   const submissionCourseDict = useCandidateStore((s) => s.submissionCourseDict);
   const { getQuestionsByCourseId, getSubmissionsByCourseId } = useCandidateStore();
 
+  const [questionsLoading, setQuestionsLoading] = useState(true);
+  const [submissionsLoading, setSubmissionsLoading] = useState(true);
+
+
   React.useEffect(() => {
     if (token && courseId) {
       const id = courseId as string;
       if (!quizQuestionsCourseDict[id]) {
-        getQuestionsByCourseId(token, id);
+        getQuestionsByCourseId(token, id).finally(() => setQuestionsLoading(false));
       }
-      getSubmissionsByCourseId(token, id);
+      getSubmissionsByCourseId(token, id).finally(() => setSubmissionsLoading(false));
     }
   }, [token, courseId, getQuestionsByCourseId, getSubmissionsByCourseId, quizQuestionsCourseDict]);
 
@@ -76,7 +58,7 @@ const CandidateCoursePage: React.FC = () => {
         Back to Assessments
       </Button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-16">
+      {!questionsLoading || !submissionsLoading ? <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-16">
         <motion.div
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
@@ -167,7 +149,10 @@ const CandidateCoursePage: React.FC = () => {
             ))}
           </div>
         </div>
-      </div>
+      </div> : <div className="flex w-full flex-col gap-3 h-full justify-center items-center">
+        <CgSpinner className="animate-spin text-xl"/>
+        <p>Loading Assessment...</p>
+          </div>}
     </motion.div>
   );
 };

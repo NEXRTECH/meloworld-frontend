@@ -53,27 +53,24 @@ export const getAssignedPatientsByTherapistId = async (therapistId: string) => {
 
 export const getAllSessionsByTherapist = async (
   therapistId: string,
-  status?: "Completed" | "Scheduled" | "In Progress" | "Cancelled"
 ) => {
-  const payload = { therapist_id: therapistId, status };
+  const payload = { therapist_id: therapistId };
   const response = await signAndRequest(
     "POST",
     {},
     SESSION_HOST,
-    "/default/sessionHandlerAPI?action=getSessionsByTherapist",
+    "/default/sessionHandlerAPI?action=getAllSessionOfTherapist",
     payload
   );
   return response;
 };
 
 export const createSession = async (
-  patientId: string,
   therapistId: string,
   startTime: string,
   metadata: Record<string, any>
 ) => {
   const payload = {
-    patient_id: patientId,
     therapist_id: therapistId,
     start_time: startTime,
     metadata,
