@@ -18,7 +18,17 @@ import {
 } from "./popover/popover";
 import { FaUserTie, FaUserGraduate, FaBuilding, FaHeartbeat, FaSignInAlt } from "react-icons/fa";
 
-const loginRoles = [
+const Navbar: React.FC = () => {
+  const { userRole, token, clearAuth } = useAuthStore();
+  const { clearCandidateStore } = useCandidateStore();
+  const pathname = usePathname();
+
+  const [navbarItems, setNavbarItems] = useState<{ name: string; link?: string; onClick?: () => void; }[]>([]);
+  const [scrolled, setScrolled] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+
+  // Dynamic login roles with conditional terminology
+  const loginRoles = [
     {
         role: "Student / Employee",
         description: "Access your assessments and track your progress.",
@@ -39,20 +49,11 @@ const loginRoles = [
     },
     {
         role: "Organization",
-        description: "Oversee your employees and view reports.",
+        description: "Oversee your candidates and view reports.",
         href: "/auth/org/login",
         icon: <FaBuilding className="text-2xl text-primary" />
     }
-]
-
-const Navbar: React.FC = () => {
-  const { userRole, token, clearAuth } = useAuthStore();
-  const { clearCandidateStore } = useCandidateStore();
-  const pathname = usePathname();
-
-  const [navbarItems, setNavbarItems] = useState<{ name: string; link?: string; onClick?: () => void; }[]>([]);
-  const [scrolled, setScrolled] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
+  ];
 
   // Determine navbar items based on auth state
   useEffect(() => {

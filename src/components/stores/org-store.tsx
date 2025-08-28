@@ -2,11 +2,11 @@ import { create } from "zustand";
 import { devtools, persist, createJSONStorage } from "zustand/middleware";
 import { Course, Organization, UserRole } from "../types";
 import { getAllAssessments } from "@/services/assessments";
-import { getAssignedCourses } from "@/services/organizations";
+import { getAssignedCourses, getOrgEmployees, getOrgReports, getOrgReportsPct, getOrgReportsAvgVsOthers } from "@/services/organizations";
 import { assert } from "console";
 
 interface OrgMetadata {
-  organization_id: number;
+  organization_id: string;
   organization_name: string;
   organization_type: string;
   contact_email: string;
@@ -27,6 +27,8 @@ interface OrgStore {
   currentOrganization: Organization | null;
   employees: any[];
   reports: any[];
+  reportsPct: any[];
+  comparisons: any[];
 
   // Loading states
   isLoading: boolean;
@@ -37,7 +39,13 @@ interface OrgStore {
   getAssignedCourses: (orgId: string) => Promise<void>;
   clearAuth: () => void;
   setOrganization: (org: Organization) => void;
+  getEmployees: (token: string, orgId: string) => Promise<void>;
   setEmployees: (employees: any[]) => void;
+  getReports: (orgId: string, token: string) => Promise<void>;
+  getReportsPct: (orgId: string, courseId: string, token: string) => Promise<void>;
+  getComparisons: (courseId: string, token: string) => Promise<void>;
+  clearComparisons: () => void;
+  clearReportsPct: () => void;
   setReports: (reports: any[]) => void;
   setLoading: (loading: boolean) => void;
   logout: () => void;
@@ -56,6 +64,8 @@ export const useOrgStore = create<OrgStore>()(
         assignedCourses: [],
         employees: [],
         reports: [],
+        reportsPct: [],
+        comparisons: [],
         isLoading: false,
         isAuthenticated: false,
 
@@ -103,8 +113,76 @@ export const useOrgStore = create<OrgStore>()(
             throw error;
           }
         },
+        getEmployees: async (token: string, orgId: string) => {
+          try {
+            const response = await getOrgEmployees(token, orgId);
+            if (response.ok) {
+              const data = await response.data;
+              set({ employees: data.organization.users });
+            }
+          }
+          catch (error) {
+            console.error("Fetching employees failed:", error.message);
+            throw error;
+          }
+        },
         setEmployees: (employees) =>
           set({ employees }, false, "org/setEmployees"),
+
+        getReports: async (orgId: string, token: string) => {
+          try {
+            const response = await getOrgReports(orgId, token);
+            if(response.ok) {
+              const data = await response.json();
+              const reports = data.results;
+              set({reports: reports})
+            }
+          }
+          catch (error) {
+            console.error("Fetching reports failed:", error.message);
+            throw error;
+          }
+        },
+
+        getReportsPct: async (orgId: string, courseId: string, token: string) => {
+          try {
+            const response = await getOrgReportsPct(orgId, courseId, token);
+            if(response.ok) {
+              const data = await response.json();
+              const newReportsPct = data.results;
+              // Append to existing reportsPct instead of replacing
+              set((state) => ({
+                reportsPct: [...state.reportsPct, ...newReportsPct]
+              }))
+            }
+          }
+          catch (error) {
+            console.error("Fetching reports percentage failed:", error.message);
+            throw error;
+          }
+        },
+
+        getComparisons: async (courseId: string, token: string) => {
+          try {
+            const response = await getOrgReportsAvgVsOthers(token, courseId);
+            if(response.ok) {
+              const data = await response.json();
+              const comparisons = data.results;
+              // Append to existing comparisons instead of replacing
+              set((state) => ({
+                comparisons: [...state.comparisons, ...comparisons]
+              }))
+            }
+          }
+          catch (error) {
+            console.error("Fetching comparisons failed:", error.message);
+            throw error;
+          }
+        },
+
+        clearComparisons: () => set({ comparisons: [] }, false, "org/clearComparisons"),
+
+        clearReportsPct: () => set({ reportsPct: [] }, false, "org/clearReportsPct"),
 
         setReports: (reports) => set({ reports }, false, "org/setReports"),
 

@@ -15,18 +15,18 @@ const ScalesTable = () => {
     if (token) getAssignedCourses(token);
   }, [token]);
 
-  const headings = ["Scale", "Description"];
+  const headings = ["Assessment", "Description"];
 
   return (
     <Card className="flex bg-white flex-col items-start gap-5 p-5 justify-start w-full h-full">
       <div className="flex w-full justify-between items-center">
-        <h2>Scales</h2>
+        <h2>Assessments</h2>
         <Button variant="outline" size="xs" className="flex gap-2 items-center">
           View More
         </Button>
       </div>
       <Table headings={headings}>
-        {courses.map((row, rowIdx) => (
+        {courses.slice(0,5).map((row, rowIdx) => (
           <tr key={row._id || rowIdx}>
             <td>{row.title}</td>
             <td>
