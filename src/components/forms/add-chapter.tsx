@@ -32,8 +32,10 @@ const AddChapterForm = ({
 
   const filteredNorms = norms.filter(
     (norm) =>
-      norm.scale_name.toLowerCase().includes(normSearch.toLowerCase()) ||
-      norm.gender.toLowerCase().includes(normSearch.toLowerCase())
+      (norm.scale_name || "")
+        .toLowerCase()
+        .includes(normSearch.toLowerCase()) ||
+      (norm.gender || "").toLowerCase().includes(normSearch.toLowerCase())
   );
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -84,40 +86,84 @@ const AddChapterForm = ({
       onSubmit={handleSubmit}
       className="flex flex-col gap-4 max-w-md mx-auto p-4 bg-white rounded-xl shadow"
     >
-      <Input
-        type="text"
-        name="title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        required
-        placeholder="Title"
-      />
-      <Input
-        type="number"
-        name="chapter_order"
-        value={chapterOrder}
-        onChange={(e) => setChapterOrder(Number(e.target.value))}
-        required
-        placeholder="Chapter Order"
-      />
-      <Input
-        type="text"
-        name="image"
-        value={image}
-        onChange={(e) => setImage(e.target.value)}
-        placeholder="Image URL (optional)"
-      />
-      <TextArea
-        name="description"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        required
-        placeholder="Description"
-        rows={4}
-      />
+      <div>
+        <label
+          htmlFor="title"
+          className="block text-sm font-semibold"
+        >
+          Title
+        </label>
+        <Input
+          id="title"
+          type="text"
+          name="title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+          placeholder="Title"
+        />
+      </div>
+      <div>
+        <label
+          htmlFor="chapter_order"
+          className="block text-sm font-semibold"
+        >
+          Chapter Order
+        </label>
+        <Input
+          id="chapter_order"
+          type="number"
+          name="chapter_order"
+          value={chapterOrder}
+          onChange={(e) => setChapterOrder(Number(e.target.value))}
+          required
+          placeholder="Chapter Order"
+        />
+      </div>
+      <div>
+        <label
+          htmlFor="image"
+          className="block text-sm font-semibold"
+        >
+          Image URL
+        </label>
+        <Input
+          id="image"
+          type="text"
+          name="image"
+          value={image}
+          onChange={(e) => setImage(e.target.value)}
+          placeholder="Image URL (optional)"
+        />
+      </div>
+      <div>
+        <label
+          htmlFor="description"
+          className="block text-sm font-semibold"
+        >
+          Description
+        </label>
+        <TextArea
+          id="description"
+          name="description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          required
+          className="w-full"
+          placeholder="Description"
+          rows={4}
+        />
+      </div>
       {/* Searchable Norm Dropdown */}
       <div className="relative">
+        <label
+          htmlFor="norm-search"
+          className="block text-sm font-semibold"
+        >
+          Norm
+        </label>
         <Input
+          id="norm-search"
           placeholder="Search and select norm"
           value={
             selectedNormId
@@ -175,11 +221,7 @@ const AddChapterForm = ({
         {loading ? "Creating..." : "Create Chapter"}
       </Button>
       {message && <div className="text-center text-sm mt-2">{message}</div>}
-      <div className="flex gap-2 mt-4">
-        <Button type="button" size="md" variant="outline" onClick={onClose}>
-          Cancel
-        </Button>
-      </div>
+      
     </form>
   );
 };

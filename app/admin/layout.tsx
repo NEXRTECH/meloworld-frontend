@@ -2,7 +2,7 @@ import ProtectedRoute from "@/components/protected-route";
 import React, { ReactNode } from "react";
 import DashboardSidebar from "src/components/ui/sidebar";
 import { GoHomeFill } from "react-icons/go";
-import { PiBuildingApartmentFill } from "react-icons/pi";
+import { PiBuildingApartmentFill, PiGear } from "react-icons/pi";
 import { IoPeople } from "react-icons/io5";
 import { FaWpforms } from "react-icons/fa6";
 
@@ -27,20 +27,11 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
       to: "/admin/organizations",
       icon: <PiBuildingApartmentFill />,
     },
-    {
-      title: "Candidates",
-      to: "/admin/candidates",
-      icon: <IoPeople />,
-    },
-    {
-      title: "Email Management",
-      to: "/admin/email",
-      icon: <PiBuildingApartmentFill />,
-    },
+    
     {
       title: "Settings",
       to: "/admin/settings",
-      icon: <PiBuildingApartmentFill />,
+      icon: <PiGear />,
     },
   ];
   

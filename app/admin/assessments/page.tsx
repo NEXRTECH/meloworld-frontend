@@ -8,7 +8,7 @@ import Card from "@/components/ui/card/card";
 import Input from "@/components/ui/input/input";
 import Table from "@/components/ui/table/table";
 import React, { useEffect, useState } from "react";
-import { FaSearch } from "react-icons/fa";
+import { FaBook, FaSearch } from "react-icons/fa";
 import { FaFilter, FaPlus, FaSort } from "react-icons/fa6";
 import {
   Dialog,
@@ -19,6 +19,14 @@ import {
 } from "@/components/ui/dialog/dialog";
 import AddCourseForm from "@/components/forms/add-course";
 import { motion } from "framer-motion";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover/popover";
+import AddNormForm from "@/components/forms/add-norm";
+import { MdRule } from "react-icons/md";
+import Drawer from "@/components/ui/drawer/drawer";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -47,6 +55,7 @@ const AssessmentsHome: React.FC = () => {
   const norms = useAdminStore((s) => s.norms);
   const { getAssessments, getNorms } = useAdminStore();
   const [open, setOpen] = useState(false);
+  const [openNorm, setOpenNorm] = useState(false);
 
   useEffect(() => {
     if (token) {
@@ -80,22 +89,40 @@ const AssessmentsHome: React.FC = () => {
               icon={<FaSearch />}
             />
             <div className="flex gap-2">
-              <Dialog open={open} onOpenChange={setOpen}>
-                <DialogTrigger asChild>
+              <Drawer isOpen={open} onClose={() => setOpen(false)}>
+                <AddCourseForm norms={norms} onClose={() => setOpen(false)} />
+              </Drawer>
+              <Drawer isOpen={openNorm} onClose={() => setOpenNorm(false)}>
+                <AddNormForm onClose={() => setOpenNorm(false)} />
+              </Drawer>
+              <Popover>
+                <PopoverTrigger asChild>
                   <Button variant="outline" size="xs" className="flex gap-2">
                     <FaPlus />
                     <p className="hidden lg:block">Create</p>
                   </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogTitle>Create Assessment</DialogTitle>
-                  <DialogDescription>
-                    This form allows you to create a new assessment. Please fill
-                    out the necessary details below.
-                  </DialogDescription>
-                  <AddCourseForm norms={norms} onClose={() => setOpen(false)} />
-                </DialogContent>
-              </Dialog>
+                </PopoverTrigger>
+                <PopoverContent className="w-40">
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      variant="outline"
+                      size="xs"
+                      onClick={() => setOpen(true)}
+                    >
+                      <FaBook />
+                      Course
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="xs"
+                      onClick={() => setOpenNorm(true)}
+                    >
+                      <MdRule />
+                      Norm
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
               <Button variant="outline" size="xs" className="flex gap-2">
                 <FaSort />
                 <p className="hidden lg:block">Sort</p>

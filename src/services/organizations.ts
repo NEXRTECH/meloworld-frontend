@@ -79,14 +79,17 @@ export const assignCourseToOrg = async (
     course_id: courseId,
   };
 
-  const response = await signAndRequest(
-    "POST",
-    { token: `Bearer ${token}` },
-    ORG_HOST,
-    "/default/orgHandlerAPI?action=assignCourseToOrganization",
-    payload
-  );
+  const url = `https://${ORG_HOST}/default/orgHandlerAPI?action=assignCourseToOrganization`;
+  const options = {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  };
 
+  const response = await retryFetch(url, options);
   return response;
 };
 
@@ -100,14 +103,17 @@ export const removeCourseFromOrg = async (
     course_id: courseId,
   };
 
-  const response = await signAndRequest(
-    "POST",
-    { token: `Bearer ${token}` },
-    ORG_HOST,
-    "/default/orgHandlerAPI?action=unassignCourseFromOrganization",
-    payload
-  );
+  const url = `https://${ORG_HOST}/default/orgHandlerAPI?action=unassignCourseFromOrganization`;
+  const options = {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  };
 
+  const response = await retryFetch(url, options);
   return response;
 };
 
@@ -163,7 +169,10 @@ export const getOrgReportsPct = async (
   return response;
 };
 
-export const getOrgReportsAvgVsOthers = async (token: string, courseId: string) => {
+export const getOrgReportsAvgVsOthers = async (
+  token: string,
+  courseId: string
+) => {
   const url = `https://${REPORT_HOST}/default/quizSubmission?action=getOrgVsOthersChapterAvg`;
   const options = {
     method: "POST",

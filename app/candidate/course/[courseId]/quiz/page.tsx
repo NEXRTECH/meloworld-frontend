@@ -121,6 +121,7 @@ const AssessmentForm: React.FC = () => {
           bg-secondary/60
           rounded-xl shadow-xl z-10 flex flex-col
           inset-0 p-4
+          min-w-screen
           md:inset-auto md:top-1/2 md:left-1/2
           md:-translate-x-1/2 md:-translate-y-1/2
           md:w-[100vw] md:h-[95vh] mt-4 lg:mt-8 lg:pt-10 pt-18

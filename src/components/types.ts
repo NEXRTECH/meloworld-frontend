@@ -12,7 +12,8 @@ export type Organization = {
 };
 
 export type Norm = {
-  _id: string;
+  _id?: string;
+  type?: string;
   normId: number;
   scale_name: string;
   gender: string;

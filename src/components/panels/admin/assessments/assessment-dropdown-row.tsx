@@ -14,6 +14,9 @@ import AddChapterForm from "@/components/forms/add-chapter";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog/dialog";
@@ -40,6 +43,7 @@ const AssessmentDropdownRow: React.FC<AssessmentDropdownRowProps> = ({
   const norms = useAdminStore((s) => s.norms);
   const { getChaptersByCourse, deleteCourse } = useAdminStore();
   const [open, setOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   useEffect(() => {
     if (token) getChaptersByCourse(token, assessmentId);
@@ -125,10 +129,41 @@ const AssessmentDropdownRow: React.FC<AssessmentDropdownRowProps> = ({
             </Dialog>
           </div>
           <div className="flex justify-center mt-5">
-            <Button onClick={handleDeleteCourse} variant="outline" size="xs">
-              <FaTrash className="text-red-300" />
-              Delete course
-            </Button>
+            <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="xs">
+                  <FaTrash className="text-red-300" />
+                  Delete course
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Are you absolutely sure?</DialogTitle>
+                  <DialogDescription>
+                    This action cannot be undone. This will permanently delete
+                    the course and all of its chapters and questions.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setDeleteOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => {
+                      handleDeleteCourse();
+                      setDeleteOpen(false);
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </>
       }

@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import Input from '../ui/input/input';
-import Button from '../ui/button/button';
-import TextArea from '../ui/textarea/textarea';
-import { useAdminStore } from '../stores/admin-store';
-import { useAuthStore } from '../stores/auth-store';
-import { useToast } from '../hooks/use-toast';
-import { Norm } from '../types';
+import React, { useState } from "react";
+import Input from "../ui/input/input";
+import Button from "../ui/button/button";
+import TextArea from "../ui/textarea/textarea";
+import { useAdminStore } from "../stores/admin-store";
+import { useAuthStore } from "../stores/auth-store";
+import { useToast } from "../hooks/use-toast";
+import { Norm } from "../types";
 
 interface AddQuizFormProps {
   onClose: () => void;
@@ -14,23 +14,26 @@ interface AddQuizFormProps {
 }
 
 const AddQuizForm = ({ onClose, chapterId, courseId }: AddQuizFormProps) => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [image, setImage] = useState('');
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [image, setImage] = useState("");
   const [selectedNormId, setSelectedNormId] = useState<number | null>(null);
-  const [normSearch, setNormSearch] = useState('');
+  const [normSearch, setNormSearch] = useState("");
   const [showNormDropdown, setShowNormDropdown] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
   const { createQuiz } = useAdminStore();
-  const norms = useAdminStore(s => s.norms)
+  const norms = useAdminStore((s) => s.norms);
   const { token } = useAuthStore();
   const { toast } = useToast();
 
-  const filteredNorms = norms.filter(norm =>
-    norm.scale_name.toLowerCase().includes(normSearch.toLowerCase()) ||
-    norm.gender.toLowerCase().includes(normSearch.toLowerCase())
+  const filteredNorms = norms.filter(
+    (norm) =>
+      (norm.scale_name || "")
+        .toLowerCase()
+        .includes(normSearch.toLowerCase()) ||
+      (norm.gender || "").toLowerCase().includes(normSearch.toLowerCase())
   );
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -105,10 +108,15 @@ const AddQuizForm = ({ onClose, chapterId, courseId }: AddQuizFormProps) => {
           placeholder="Search and select norm"
           value={
             selectedNormId
-              ? `${norms.find(n => n.normId === selectedNormId)?.scale_name || ''} (${norms.find(n => n.normId === selectedNormId)?.gender || ''})`
+              ? `${
+                  norms.find((n) => n.normId === selectedNormId)?.scale_name ||
+                  ""
+                } (${
+                  norms.find((n) => n.normId === selectedNormId)?.gender || ""
+                })`
               : normSearch
           }
-          onChange={e => {
+          onChange={(e) => {
             setNormSearch(e.target.value);
             setShowNormDropdown(true);
             setSelectedNormId(null);
@@ -121,13 +129,13 @@ const AddQuizForm = ({ onClose, chapterId, courseId }: AddQuizFormProps) => {
             {filteredNorms.length === 0 && (
               <div className="p-2 text-gray-500">No norms found</div>
             )}
-            {filteredNorms.map(norm => (
+            {filteredNorms.map((norm) => (
               <div
                 key={norm._id}
                 className="p-2 hover:bg-blue-100 cursor-pointer"
                 onClick={() => {
                   setSelectedNormId(norm.normId);
-                  setNormSearch('');
+                  setNormSearch("");
                   setShowNormDropdown(false);
                 }}
               >
@@ -142,7 +150,7 @@ const AddQuizForm = ({ onClose, chapterId, courseId }: AddQuizFormProps) => {
             className="absolute right-2 top-2 text-gray-400 hover:text-gray-600"
             onClick={() => {
               setSelectedNormId(null);
-              setNormSearch('');
+              setNormSearch("");
               setShowNormDropdown(true);
             }}
           >

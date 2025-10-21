@@ -22,6 +22,7 @@ import {
   getAllAssessments,
   createCourse as createCourseService,
   deleteCourse as deleteCourseService,
+  createNorm as createNormService,
 } from "@/services/assessments";
 import {
   getAllQuestionsByQuizId,
@@ -83,6 +84,7 @@ export interface AdminStoreState {
   getReportsByCourse: (token: string, courseId: string) => Promise<void>;
   getSubmissionsByCourse: (token: string, courseId: string) => Promise<void>;
   getNorms: (token: string) => Promise<void>;
+  createNorm: (token: string, normData: Norm, type: string) => Promise<void>;
 
   // Legacy methods for backward compatibility
   getAssessments: (token: string) => Promise<void>;
@@ -102,7 +104,7 @@ export interface AdminStoreState {
   // Assessment management
   createCourse: (
     token: string,
-    courseData: { title: string; description?: string, image: string, normId: number }
+    courseData: { title: string; description?: string, image: string, normId: number, type: string }
   ) => Promise<void>;
   deleteCourse: (token: string, courseId: string) => Promise<void>;
 
@@ -469,6 +471,7 @@ export const useAdminStore = create<AdminStoreState>()(
             throw error;
           }
         },
+
         // Legacy methods for backward compatibility
         getAssessments: async (token: string) => {
           const { getCourses } = get();
@@ -532,9 +535,9 @@ export const useAdminStore = create<AdminStoreState>()(
         },
 
         // Assessment management
-        createCourse: async (token, { title, description, image, normId }) => {
+        createCourse: async (token, { title, description, image, normId, type }) => {
           try {
-            const response = await createCourseService(token, { title, description, image, norm_id:normId });
+            const response = await createCourseService(token, { title, description, image, norm_id:normId, type });
             if (response.ok) {
               // Refetch assessments to update the list
               get().getAssessments(token);
@@ -658,6 +661,20 @@ export const useAdminStore = create<AdminStoreState>()(
         getSubmissionsByCourseIdUtility: (courseId: string) => {
           const state = get();
           return state.submissions[courseId] || [];
+        },
+
+        createNorm: async (token, normData, type) => {
+          try {
+            const response = await createNormService(token, normData, type);
+            if(response.ok) {
+              get().getNorms(token);
+            } else {
+              throw new Error("Failed to create norm");
+            }
+          } catch (error) {
+            console.error("Error creating norm:", error);
+            throw error;
+          }
         },
 
         createQuiz: async (token, quizData) => {
