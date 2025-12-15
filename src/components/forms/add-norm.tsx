@@ -26,6 +26,11 @@ interface NormData {
     average: string;
     low: string;
   };
+  recommendations: {
+    high: string;
+    average: string;
+    low: string;
+  };
 }
 
 const AddNormForm = ({ onClose }: { onClose: () => void }) => {
@@ -45,6 +50,11 @@ const AddNormForm = ({ onClose }: { onClose: () => void }) => {
       high_min: 27,
     },
     interpretations: {
+      high: "",
+      average: "",
+      low: "",
+    },
+    recommendations: {
       high: "",
       average: "",
       low: "",
@@ -85,6 +95,18 @@ const AddNormForm = ({ onClose }: { onClose: () => void }) => {
       ...prev,
       interpretations: {
         ...prev.interpretations,
+        [name]: value,
+      },
+    }));
+  };
+  const handleRecommendationChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      recommendations: {
+        ...prev.recommendations,
         [name]: value,
       },
     }));
@@ -308,6 +330,52 @@ const AddNormForm = ({ onClose }: { onClose: () => void }) => {
             required
           />
         </div>
+            {/* Recommendation Section */}
+        <h3 className="text-lg font-semibold mt-2">Recommendations</h3>
+
+        <div className="flex flex-col ">
+          <label htmlFor="high_recommendation" className="font-semibold">
+            High Recommendations
+          </label>
+          <TextArea
+            id="high_recommendation"
+            placeholder="High Recommendation"
+            name="high"
+            value={formData.recommendations.high}
+            onChange={handleRecommendationChange}
+            className="p-2 border rounded min-h-[80px]"
+            required
+          />
+        </div>
+        <div className="flex flex-col ">
+          <label htmlFor="average_recommendation" className="font-semibold">
+            Average Recommendations
+          </label>
+          <TextArea
+            id="average_recommendation"
+            placeholder="Average Recommendation"
+            name="average"
+            value={formData.recommendations.average}
+            onChange={handleRecommendationChange}
+            className="p-2 border rounded min-h-[80px]"
+            required
+          />
+        </div>
+        <div className="flex flex-col ">
+          <label htmlFor="low_recommendation" className="font-semibold">
+            low Recommendations
+          </label>
+          <TextArea
+            id="low_recommendation"
+            placeholder="Low Recommendation"
+            name="low"
+            value={formData.recommendations.low}
+            onChange={handleRecommendationChange}
+            className="p-2 border rounded min-h-[80px]"
+            required
+          />
+        </div>
+        
       </div>
 
       <div className="mt-auto p-2">

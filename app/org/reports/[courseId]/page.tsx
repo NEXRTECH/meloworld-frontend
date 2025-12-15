@@ -10,7 +10,7 @@ import { FiCheckCircle, FiUsers, FiTrendingUp, FiChevronLeft } from "react-icons
 import { useOrgStore } from "@/components/stores/org-store";
 import { useAuthStore } from "@/components/stores/auth-store";
 import { useParams, useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -63,6 +63,11 @@ interface ReportEntry {
       average: string;
       low: string;
     };
+    recommendations?: {
+      high?: string;
+      average?: string;
+      low?: string;
+    };
     corporate: boolean;
   };
 }
@@ -85,6 +90,12 @@ interface ComparisonEntry {
 }
 
 const getScoreCategory = (score: number, thresholds: any) => {
+  if (!thresholds) {
+    // fallback simple mapping
+    if (score <= 10) return 'low';
+    if (score <= 20) return 'average';
+    return 'high';
+  }
   if (score <= thresholds.low_max) return 'low';
   if (score >= thresholds.avg_min && score <= thresholds.avg_max) return 'average';
   if (score >= thresholds.high_min) return 'high';
@@ -95,7 +106,6 @@ const OrganizationOverview: React.FC<{
   reportsPct: ReportPctEntry[]; 
   reports: ReportEntry[] 
 }> = ({ reportsPct, reports }) => {
-  // Create a map to get scale names from chapter IDs
   const getScaleNameByChapterId = (chapterId: string) => {
     const report = reports.find(r => r.chapterDetails._id === chapterId);
     return report?.report.scale_name || 'Unknown Scale';
@@ -113,9 +123,6 @@ const OrganizationOverview: React.FC<{
           <FiTrendingUp className="text-primary" />
           Organization Overview
         </h2>
-        {/* <p className="mt-2 text-base max-w-3xl mx-auto opacity-70">
-          High-performing employee percentages across all assessment scales
-        </p> */}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -166,7 +173,6 @@ const OrganizationOverview: React.FC<{
 const ComparisonChart: React.FC<{ 
   comparisons: ComparisonEntry[] 
 }> = ({ comparisons }) => {
-  // Prepare data for Chart.js
   const labels = comparisons.map(item => item.chapter_name);
   const orgData = comparisons.map(item => item.org_avg);
   const industryData = comparisons.map(item => item.others_avg);
@@ -177,7 +183,7 @@ const ComparisonChart: React.FC<{
       {
         label: 'Your Organization',
         data: orgData,
-        backgroundColor: '#ff7900', // Primary color
+        backgroundColor: '#ff7900',
         borderColor: '#ff7900',
         borderWidth: 1,
         borderRadius: 4,
@@ -186,7 +192,7 @@ const ComparisonChart: React.FC<{
       {
         label: 'Industry Average',
         data: industryData,
-        backgroundColor: '#fde9da', // Secondary color
+        backgroundColor: '#fde9da',
         borderColor: '#fde9da',
         borderWidth: 1,
         borderRadius: 4,
@@ -296,7 +302,6 @@ const ComparisonChart: React.FC<{
         )}
       </div>
 
-      {/* Performance Summary */}
       {comparisons.length > 0 && (
         <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {comparisons.slice(0, 6).map((comparison, index) => (
@@ -326,7 +331,18 @@ const ComparisonChart: React.FC<{
 };
 
 const ReportSection: React.FC<{ report: ReportEntry; index: number }> = ({ report, index }) => {
-  const activeCategory = getScoreCategory(report.yourScore, report.report.norm_thresholds);
+  if(!report.report){
+    return null;
+  }
+  const activeCategory = getScoreCategory(report?.yourScore, report?.report.norm_thresholds);
+  
+  // chosen recommendation based on score/category with safe fallbacks
+  const chosenRecommendation =
+    report.report.recommendations?.[activeCategory] ??
+    report.report.recommendations?.average ??
+    report.report.recommendations?.high ??
+    report.report.recommendations?.low ??
+    "No recommendation available.";
 
   return (
     <motion.div
@@ -394,6 +410,26 @@ const ReportSection: React.FC<{ report: ReportEntry; index: number }> = ({ repor
           }
         )}
       </div>
+
+      {/* ===== Single centered recommendation (score-based) ===== */}
+      <div className="mt-10">
+        <div className="max-w-2xl mx-auto">
+          <div className="relative bg-white border rounded-2xl p-8 shadow-md text-center">
+            <div className="mx-auto inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary text-white mb-4">
+              <FiCheckCircle className="w-5 h-5" />
+            </div>
+
+            <h4 className="text-xl font-semibold text-sky-900 mb-3 capitalize">
+              Recommendation — {activeCategory}
+            </h4>
+
+            <p className="text-sm leading-relaxed text-sky-900 opacity-80">
+              {chosenRecommendation}
+            </p>
+          </div>
+        </div>
+      </div>
+      {/* ===== end recommendation ===== */}
     </motion.div>
   );
 };
@@ -429,7 +465,7 @@ const CourseReportsPage = () => {
 
   // Resolve course name strictly from assignedCourses
   const courseMeta = assignedCourses.find(c => c._id === (courseId as string));
-  const courseName = (courseReports[0]?.chapterDetails.courseTitle) || courseMeta?.title || (courseId as string);
+  const courseName = (courseReports?.[0]?.chapterDetails?.title   || courseReports[0]?.chapterDetails.courseTitle) || courseMeta?.title || (courseId as string);
 
   // Ensure base reports and assigned courses are loaded
   useEffect(() => {
@@ -482,15 +518,6 @@ const CourseReportsPage = () => {
             Detailed assessment results and analysis for this course
           </p>
         </div>
-
-        {/* Export Button */}
-        {/* <div className="flex justify-center px-4">
-          <Button className="flex items-center gap-2 text-sm sm:text-base px-4 sm:px-6 py-2 sm:py-3">
-            <FaDownload className="text-sm sm:text-base" />
-            <span className="hidden sm:inline">Export Report</span>
-            <span className="sm:hidden">Export</span>
-          </Button>
-        </div> */}
 
         {/* Organization Overview Section */}
         {courseReportsPct && courseReportsPct.length > 0 && (

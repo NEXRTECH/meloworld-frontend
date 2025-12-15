@@ -118,7 +118,7 @@ const AssessmentsHome: React.FC = () => {
                       onClick={() => setOpenNorm(true)}
                     >
                       <MdRule />
-                      Norm
+                      Add Norm
                     </Button>
                   </div>
                 </PopoverContent>
