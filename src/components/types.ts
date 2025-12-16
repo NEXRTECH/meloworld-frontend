@@ -22,6 +22,7 @@ export type Norm = {
   description: string;
   norm_thresholds: NormThresholds;
   interpretations: Interpretations;
+  recommendations: Recommendations;
 }
 
 export type Course = {
@@ -81,6 +82,12 @@ export type Interpretations = {
   average: string;
   low: string;
 };
+
+export type Recommendations = {
+  high: string;
+  average: string;
+  low: string;
+}
 
 export type Scale = {
   quiz_id: string;
