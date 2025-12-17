@@ -49,19 +49,21 @@ const ReportPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
+  const thresholds =
+    activeScale && "norm_thresholds" in activeScale
+    ? activeScale.norm_thresholds
+    : undefined;
+
   const activeCategory = getScoreCategory(
     activeScale?.score,
-    activeScale?.norm_thresholds ?? activeScale?.report?.norm_thresholds
+    thresholds
   );
 
   const chosenRecommendation =
-    activeScale?.recommendation ??
-    "No recommendation available.";
-  // const chosenRecommendation =
-  //   activeScale?.recommendation?.[activeCategory] ??
-  //   activeScale?.recommendation?.average ??
-  //   activeScale?.recommendation?.high ??
-  //   activeScale?.recommendation?.low ??
+  typeof activeScale?.recommendation === "object"
+    ? activeScale.recommendation?.[activeCategory] ??
+      "No recommendation available."
+    : activeScale?.recommendation ?? "No recommendation available.";
 
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-20 sm:px-10 sm:py-24">

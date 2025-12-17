@@ -67,8 +67,22 @@ export const createNorm = async (token: string, normData: Norm, type: string) =>
   const response = await retryFetch(url, options);
   return response;
 }
-export const updateNorm = async (token: string, normData: Norm, type: string) => {
-  const url = `https://${NORM_HOST}/default/norms?action=updateNorm&type=${type}`;
+// export const updateNorm = async (token: string, normData: Norm, type: string) => {
+//   const url = `https://${NORM_HOST}/default/norms?action=updateNorm&type=${type}`;
+//   const options = {
+//     method: "POST",
+//     headers: {
+//       Authorization: `Bearer ${token}`,
+//       "Content-Type": "application/json",
+//     },
+//     body: JSON.stringify(normData),
+//   };
+//   const response = await retryFetch(url, options);
+//   return response;
+// }
+
+export const updateNorm = async (token: string, normId: number, normData: any, type: string) => {
+  const url = `https://${NORM_HOST}/default/norms?action=updateNorm&type=${type}&normId=${normId}`;
   const options = {
     method: "POST",
     headers: {
@@ -77,6 +91,5 @@ export const updateNorm = async (token: string, normData: Norm, type: string) =>
     },
     body: JSON.stringify(normData),
   };
-  const response = await retryFetch(url, options);
-  return response;
-}
+  return await retryFetch(url, options);
+};

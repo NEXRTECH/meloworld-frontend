@@ -23,6 +23,7 @@ import {
   createCourse as createCourseService,
   deleteCourse as deleteCourseService,
   createNorm as createNormService,
+  updateNorm as updateNormService,
 } from "@/services/assessments";
 import {
   getAllQuestionsByQuizId,
@@ -85,6 +86,7 @@ export interface AdminStoreState {
   getSubmissionsByCourse: (token: string, courseId: string) => Promise<void>;
   getNorms: (token: string) => Promise<void>;
   createNorm: (token: string, normData: Norm, type: string) => Promise<void>;
+  updateNorm: (token: string, normData: Norm, type: string) => Promise<void>;
 
   // Legacy methods for backward compatibility
   getAssessments: (token: string) => Promise<void>;
@@ -673,6 +675,32 @@ export const useAdminStore = create<AdminStoreState>()(
             }
           } catch (error) {
             console.error("Error creating norm:", error);
+            throw error;
+          }
+        },
+
+        updateNorm: async (token, normData, type) => {
+          try {
+            if (!normData.normId) {
+              throw new Error("normId is required for update");
+            }
+
+            const response = await updateNormService(
+              token,
+              normData.normId,   // 🔴 QUERY PARAM
+              normData,
+              type
+            );
+
+            if (response.ok) {
+              get().getNorms(token);
+            } else {
+              const err = await response.text();
+              console.error("Backend error:", err);
+              throw new Error("Failed to update norm");
+            }
+          } catch (error) {
+            console.error("Error updating norm:", error);
             throw error;
           }
         },
