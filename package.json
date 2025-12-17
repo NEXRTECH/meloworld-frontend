@@ -21,7 +21,7 @@
     "html2canvas-pro": "^1.5.11",
     "jspdf": "^3.0.1",
     "motion": "^12.10.5",
-    "next": "latest",
+    "next": "15.3.8",
     "postcss": "^8.5.3",
     "radix-ui": "^1.4.1",
     "react": "latest",
