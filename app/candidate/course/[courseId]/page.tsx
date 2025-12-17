@@ -58,7 +58,7 @@ const CandidateCoursePage: React.FC = () => {
         Back to Assessments
       </Button>
 
-      {!questionsLoading || !submissionsLoading ? <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-16">
+      {!questionsLoading && !submissionsLoading ? <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-16">
         <motion.div
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}

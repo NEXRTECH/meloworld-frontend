@@ -97,6 +97,7 @@ export type Scale = {
   description: string;
   norm_thresholds: NormThresholds;
   interpretations: Interpretations;
+  recommendation: Recommendations;
 };
 
 export type Report = {
