@@ -6,6 +6,7 @@ import { useAuthStore } from "@/components/stores/auth-store";
 import { useCandidateStore } from "@/components/stores/candidate-store";
 import Button from "@/components/ui/button/button";
 import { FiChevronLeft, FiCheckCircle } from "react-icons/fi";
+import { parseRecommendationPoints } from "@/lib/utils";
 
 /**
  * Determine category from score using thresholds.
@@ -59,11 +60,13 @@ const ReportPage = () => {
     thresholds
   );
 
-  const chosenRecommendation =
-  typeof activeScale?.recommendation === "object"
-    ? activeScale.recommendation?.[activeCategory] ??
-      "No recommendation available."
-    : activeScale?.recommendation ?? "No recommendation available.";
+  const rawRecommendation =
+    typeof activeScale?.recommendation === "string"
+    ? activeScale.recommendation
+    : "";
+  
+  const recommendationPoints = parseRecommendationPoints(rawRecommendation);
+  console.log("recommendation list",recommendationPoints)
 
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-20 sm:px-10 sm:py-24">
@@ -175,9 +178,17 @@ const ReportPage = () => {
                         {/* — {activeCategory} */}
                       </h4>
 
-                      <p className="text-base leading-relaxed text-sky-900">
-                        {chosenRecommendation}
-                      </p>
+                      {recommendationPoints.length > 0 ? (
+                        <ul className="list-disc list-inside text-base test-sky-900 space-y-2 text-left">
+                          {recommendationPoints.map((point, index) => (
+                            <li key={index}>{point}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="text-base leading-relaxed text-sky-900">
+                          No recommendation available
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>

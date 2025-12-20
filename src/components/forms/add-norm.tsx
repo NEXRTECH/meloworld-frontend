@@ -7,7 +7,7 @@ import TextArea from "../ui/textarea/textarea";
 import Select from "../ui/select/select";
 import { Norm } from "../types";
 import { randomInt } from "crypto";
-
+import { stringifyRecommendationPoints } from "@/lib/utils";
 interface NormData {
   type: string;
   scale_name: string;
@@ -121,7 +121,15 @@ const AddNormForm = ({ onClose }: { onClose: () => void }) => {
     setLoading(true);
     setMessage(null);
     try {
-      await createNorm(token, formData as Norm, formData.type as string);
+      const payload: Norm = {
+        ...formData,
+        recommendations: {
+          high:  stringifyRecommendationPoints(formData.recommendations.high),
+          average: stringifyRecommendationPoints(formData.recommendations.average),
+          low: stringifyRecommendationPoints(formData.recommendations.low),
+        },
+      };
+      await createNorm(token, payload, formData.type as string);
       console.log("norm created", formData);
       setMessage("Norm created successfully!");
       onClose();

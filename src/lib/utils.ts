@@ -5,6 +5,35 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Convert multiline recommendation text into a single string
+ * Backend expects ONE string
+ * Points are separated by EMPTY LINES
+ */
+export const stringifyRecommendationPoints = (value?: string): string => {
+  if (!value || typeof value !== "string") return "";
+
+  return value
+    .split(/\n\s*\n/)           // split by empty lines
+    .map(p => p.replace(/\n/g, " ").trim())
+    .filter(Boolean)
+    .join("\n\n");              // re-join with empty line
+};
+
+
+/**
+ * Convert backend recommendation string into array of points
+ * Used for displaying as list
+ */
+export const parseRecommendationPoints = (value?: string): string[] => {
+  if (!value || typeof value !== "string") return [];
+
+  return value
+    .split(/\n\s*\n/)
+    .map(p => p.replace(/^●\s*/g, " ").replace(/\n/g, " ").trim())
+    .filter(Boolean);
+};
+
 
 export const retryFetch = async (url: string, options: RequestInit, retries = 3, delay = 500): Promise<Response> => {
   for (let attempt = 0; attempt < retries; attempt++) {
