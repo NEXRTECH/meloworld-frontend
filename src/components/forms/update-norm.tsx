@@ -8,6 +8,7 @@ import Select from "../ui/select/select";
 import { useAuthStore } from "../stores/auth-store";
 import { useAdminStore } from "../stores/admin-store";
 import { Norm } from "../types";
+import { parseRecommendationPoints, stringifyRecommendationPoints } from "@/lib/utils";
 
 interface Props {
   existingNorm: Norm;
@@ -88,7 +89,16 @@ const UpdateNormForm: React.FC<Props> = ({ existingNorm, onClose }) => {
     try {
       setLoading(true);
       setMessage(null);
-      await updateNorm(token, formData, formData.type as string);
+
+      const payload: Norm = {
+        ...formData,
+        recommendations: {
+          high: stringifyRecommendationPoints(formData.recommendations.high),
+          average: stringifyRecommendationPoints(formData.recommendations.average),
+          low: stringifyRecommendationPoints(formData.recommendations.low),
+        },
+      };
+      await updateNorm(token, payload, formData.type as string);
       setMessage("✅ Norm updated successfully");
     } catch {
       setMessage("❌ Failed to update norm");
@@ -194,6 +204,12 @@ const UpdateNormForm: React.FC<Props> = ({ existingNorm, onClose }) => {
             className="min-h-[90px] min-w-[100%]"
             placeholder="Update High recommendation"
           />
+
+          {/* <ul className="list-disc list-inside text-sm text-gray-700 space-y-1 mt-2">
+            {parseRecommendationPoints(formData.recommendations.high).map((point, i) => (
+              <li key={i}>{point}</li>
+            ))}
+          </ul> */}
           <TextArea
             name="average"
             value={formData.recommendations.average}
@@ -201,6 +217,11 @@ const UpdateNormForm: React.FC<Props> = ({ existingNorm, onClose }) => {
             className="min-h-[90px] min-w-[100%]"
             placeholder="Update Average recommendation"
           />
+          {/* <ul className="list-disc list-inside text-sm text-gray-700 space-y-1 mt-2">
+            {parseRecommendationPoints(formData.recommendations.average).map((point, i) => (
+            <li key={i}>{point}</li>
+            ))}
+          </ul> */}
           <TextArea
             name="low"
             value={formData.recommendations.low}
@@ -208,6 +229,11 @@ const UpdateNormForm: React.FC<Props> = ({ existingNorm, onClose }) => {
             className="min-h-[90px] min-w-[100%]"
             placeholder="Update Low recommendation"
           />
+          {/* <ul className="list-disc list-inside text-sm text-gray-700 space-y-1 mt-2">
+            {parseRecommendationPoints(formData.recommendations.low).map((point, i) => (
+            <li key={i}>{point}</li>
+            ))}
+          </ul> */}
         </section>
       </div>
 
