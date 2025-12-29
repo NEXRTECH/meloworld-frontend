@@ -25,6 +25,7 @@ interface AssessmentDropdownRowProps {
   assessmentId: string;
   title: string;
   description: string;
+  corporate: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -33,6 +34,7 @@ const AssessmentDropdownRow: React.FC<AssessmentDropdownRowProps> = ({
   assessmentId,
   title,
   description,
+  corporate,
   createdAt,
   updatedAt,
 }) => {
@@ -48,8 +50,14 @@ const AssessmentDropdownRow: React.FC<AssessmentDropdownRowProps> = ({
   const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (token) getChaptersByCourse(token, assessmentId);
-  }, [token, assessmentId]);
+  if (!token) return;
+
+  // fetch only once per course
+  if (!chaptersByCourse[assessmentId]) {
+    getChaptersByCourse(token, assessmentId);
+  }
+}, [token, assessmentId, chaptersByCourse, getChaptersByCourse]);
+
 
   const handleDeleteCourse = async () => {
     if (token) {
@@ -196,6 +204,7 @@ const AssessmentDropdownRow: React.FC<AssessmentDropdownRowProps> = ({
                     setOpen(false);
                   }}
                   courseId={assessmentId}
+                  corporate={corporate}
                   norms={norms}
                 />
               </DialogContent>

@@ -59,6 +59,7 @@ const AssessmentsHome: React.FC = () => {
               assessmentId={a._id}
               title={a.title}
               description={a.description}
+              corporate={a.corporate}
               createdAt={a.created_at}
               updatedAt={a.updated_at}
             />

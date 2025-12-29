@@ -11,9 +11,10 @@ interface AddQuizFormProps {
   onClose: () => void;
   chapterId: string;
   courseId: string;
+  corporate: boolean;
 }
 
-const AddQuizForm = ({ onClose, chapterId, courseId }: AddQuizFormProps) => {
+const AddQuizForm = ({ onClose, chapterId, courseId, corporate }: AddQuizFormProps) => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState("");
@@ -28,13 +29,29 @@ const AddQuizForm = ({ onClose, chapterId, courseId }: AddQuizFormProps) => {
   const { token } = useAuthStore();
   const { toast } = useToast();
 
-  const filteredNorms = norms.filter(
-    (norm) =>
-      (norm.scale_name || "")
-        .toLowerCase()
-        .includes(normSearch.toLowerCase()) ||
-      (norm.gender || "").toLowerCase().includes(normSearch.toLowerCase())
-  );
+  // const filteredNorms = norms.filter(
+  //   (norm) =>
+  //     (norm.scale_name || "")
+  //       .toLowerCase()
+  //       .includes(normSearch.toLowerCase()) ||
+  //     (norm.gender || "").toLowerCase().includes(normSearch.toLowerCase())
+  // );
+
+  const search = normSearch.toLowerCase().trim();
+
+  const filteredNorms = norms.filter((norm) => {
+    if (corporate && !norm.corporate) return false;
+    if (!corporate && norm.corporate) return false;
+
+    if (search.startsWith("corp")) return norm.corporate;
+    if (search.startsWith("stu")) return !norm.corporate;
+
+    return (
+      (norm.scale_name || "").toLowerCase().includes(search) ||
+      (norm.gender || "").toLowerCase().includes(search)
+    );
+  });
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +59,18 @@ const AddQuizForm = ({ onClose, chapterId, courseId }: AddQuizFormProps) => {
       setMessage("Please select a norm.");
       return;
     }
+    const selectedNorm = norms.find((n) => n.normId === selectedNormId);
+
+    if (!selectedNorm) {
+      setMessage("Please select a norm.");
+      return;
+    }
+
+    if (selectedNorm.corporate !== corporate) {
+      setMessage("Selected norm does not match course type.");
+      return;
+    }
+
     if (!token) {
       setMessage("You must be logged in.");
       return;
@@ -130,18 +159,25 @@ const AddQuizForm = ({ onClose, chapterId, courseId }: AddQuizFormProps) => {
               <div className="p-2 text-gray-500">No norms found</div>
             )}
             {filteredNorms.map((norm) => (
-              <div
-                key={norm._id}
-                className="p-2 hover:bg-blue-100 cursor-pointer"
-                onClick={() => {
-                  setSelectedNormId(norm.normId);
-                  setNormSearch("");
-                  setShowNormDropdown(false);
-                }}
-              >
-                {norm.scale_name} ({norm.gender})
-              </div>
-            ))}
+            <div
+              key={norm._id}
+              className="p-2 hover:bg-blue-100 cursor-pointer flex justify-between"
+              onClick={() => {
+                setSelectedNormId(norm.normId);
+                setNormSearch("");
+                setShowNormDropdown(false);
+              }}
+            >
+              <span>
+                {norm.scale_name}
+                {norm.gender && <span> ({norm.gender})</span>}
+              </span>
+
+              <span className="text-xs text-gray-500">
+                [{norm.corporate ? "Corporate" : "Student"}]
+              </span>
+            </div>
+          ))}
           </div>
         )}
         {selectedNormId && (

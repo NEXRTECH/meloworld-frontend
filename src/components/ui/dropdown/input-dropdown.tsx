@@ -31,29 +31,29 @@ const InputDropdown: React.FC<InputDropdownProps> = ({
   primaryColor = "#024a70",
   secondaryColor = "#fde9da",
   className = "",
+  value,
   ...props
 }) => {
   const hasIcon = !!icon;
 
   return (
     <div className={`w-full max-w-sm text-${textSize}`}>
-      {label && (
-        <label className="block mb-1 font-semibold">
-          {label}
-        </label>
-      )}
+      {label && <label className="block mb-1 font-semibold">{label}</label>}
+
       <div className="relative">
         {hasIcon && (
           <span className="absolute inset-y-0 left-0 z-10 flex items-center pl-3">
             {icon}
           </span>
         )}
+
         <select
+          {...props}
+          value={value ?? ""}
           className={`
             w-full
             rounded-xl
             border-2
-            
             bg-transparent
             shadow-lg
             appearance-none
@@ -63,18 +63,23 @@ const InputDropdown: React.FC<InputDropdownProps> = ({
             ${className}
           `}
           style={{ borderColor: primaryColor }}
-          {...props}
         >
+          <option value="" disabled>
+            Select
+          </option>
+
           {options.map((opt, index) => {
             const { label, value } =
               typeof opt === "string" ? { label: opt, value: opt } : opt;
+
             return (
-              <option  className="bg-transparent" key={index} value={value}>
+              <option key={index} value={value}>
                 {label}
               </option>
             );
           })}
         </select>
+
         <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-500">
           ▼
         </span>
