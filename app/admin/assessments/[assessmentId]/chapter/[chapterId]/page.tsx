@@ -32,6 +32,8 @@ const ChapterPanel: React.FC = () => {
   const token = useAuthStore((state) => state.token);
   const params = useParams();
   const assessmentId = params.assessmentId as string;
+  const assessments = useAdminStore((state) => state.assessments);
+  const course = assessments.find(a => a._id === assessmentId);
   const chapterId = params.chapterId as string;
   const {
     getQuizzesByCourse,
@@ -207,6 +209,10 @@ const ChapterPanel: React.FC = () => {
     );
   }
 
+  if (!course) {
+    return <p>Loading course...</p>;
+  }
+  
   return (
     <div className="dashboard-panel mt-10 lg:mt-0 relative h-full w-full flex flex-col gap-5 items-start justify-start">
       <Button
@@ -522,6 +528,7 @@ const ChapterPanel: React.FC = () => {
               <AddQuizForm
                 chapterId={chapterId}
                 courseId={assessmentId}
+                corporate={course.corporate}
                 onClose={() => setShowQuizForm(false)}
               />
             </div>

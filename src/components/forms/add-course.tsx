@@ -27,13 +27,31 @@ const AddCourseForm = ({
 
   const { createCourse } = useAdminStore();
 
-  const filteredNorms = norms.filter(
-    (norm) =>
-      (norm.scale_name || "")
-        .toLowerCase()
-        .includes(normSearch.toLowerCase()) ||
-      (norm.gender || "").toLowerCase().includes(normSearch.toLowerCase())
-  );
+  const search = normSearch.toLowerCase().trim();
+
+  const filteredNorms = norms.filter((norm) => {
+    const isCorporate = norm.corporate === true;
+    const isStudent = !norm.corporate;
+
+    // Corporate keyword (corp, corpor, corporate, etc.)
+    if (search.startsWith("corp")) {
+      return isCorporate;
+    }
+
+    // Student keyword (stu, stud, stude, student, etc.)
+    if (search.startsWith("stu")) {
+      return isStudent;
+    }
+
+    // Normal search (scale name / gender)
+    return (
+      (norm.scale_name || "").toLowerCase().includes(search) ||
+      (norm.gender || "").toLowerCase().includes(search)
+    );
+  });
+
+
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,14 +142,14 @@ const AddCourseForm = ({
         <label htmlFor="norm-search" className="text-sm font-semibold">
           Search and select norm
         </label>
+
         <Input
           id="norm-search"
           placeholder="Search and select norm"
           value={
             selectedNormId
               ? `${
-                  norms.find((n) => n.normId === selectedNormId)?.scale_name ||
-                  ""
+                  norms.find((n) => n.normId === selectedNormId)?.scale_name || ""
                 } (${
                   norms.find((n) => n.normId === selectedNormId)?.gender || ""
                 })`
@@ -145,26 +163,44 @@ const AddCourseForm = ({
           onFocus={() => setShowNormDropdown(true)}
           readOnly={!!selectedNormId}
         />
+
         {showNormDropdown && !selectedNormId && (
           <div className="absolute z-10 w-full bg-white border rounded shadow max-h-48 overflow-y-auto mt-16">
             {filteredNorms.length === 0 && (
               <div className="p-2 text-gray-500">No norms found</div>
             )}
+
             {filteredNorms.map((norm) => (
               <div
                 key={norm._id}
-                className="p-2 hover:bg-blue-100 cursor-pointer"
+                className="p-2 hover:bg-blue-100 cursor-pointer flex justify-between items-center"
                 onClick={() => {
                   setSelectedNormId(norm.normId);
                   setNormSearch("");
                   setShowNormDropdown(false);
                 }}
               >
-                {norm.scale_name} ({norm.gender})
+                <span>
+                  {norm.scale_name}
+                  {norm.gender && (
+                    <span className="ml-1 text-sm text-gray-600">
+                      ({norm.gender})
+                    </span>
+                  )}
+                </span>
+
+                <span
+                  className={`text-xs ml-2 ${
+                    norm.corporate ? "text-purple-600" : "text-green-600"
+                  }`}
+                >
+                  [{norm.corporate ? "Corporate" : "Student"}]
+                </span>
               </div>
             ))}
           </div>
         )}
+
         {selectedNormId && (
           <button
             type="button"
@@ -179,6 +215,7 @@ const AddCourseForm = ({
           </button>
         )}
       </div>
+      
       <div className="flex flex-col gap-1">
         <label htmlFor="course-type" className="text-sm font-semibold">
           Course Type

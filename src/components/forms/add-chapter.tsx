@@ -10,10 +10,12 @@ import { Norm } from "../types";
 const AddChapterForm = ({
   onClose,
   courseId,
+  corporate,
   norms,
 }: {
   onClose: () => void;
   courseId: string;
+  corporate: boolean;
   norms: Norm[];
 }) => {
   const [title, setTitle] = useState("");
@@ -30,13 +32,23 @@ const AddChapterForm = ({
   const { token } = useAuthStore();
   const { toast } = useToast();
 
-  const filteredNorms = norms.filter(
-    (norm) =>
-      (norm.scale_name || "")
-        .toLowerCase()
-        .includes(normSearch.toLowerCase()) ||
-      (norm.gender || "").toLowerCase().includes(normSearch.toLowerCase())
-  );
+  const search = normSearch.toLowerCase().trim();
+
+  const filteredNorms = norms.filter((norm) => {
+    // Enforce course type
+    if (corporate && !norm.corporate) return false;
+    if (!corporate && norm.corporate) return false;
+
+    // Search helpers
+    if (search.startsWith("corp")) return norm.corporate;
+    if (search.startsWith("stu")) return !norm.corporate;
+
+    // Normal search
+    return (
+      (norm.scale_name || "").toLowerCase().includes(search) ||
+      (norm.gender || "").toLowerCase().includes(search)
+    );
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,6 +56,21 @@ const AddChapterForm = ({
       setMessage("Please select a norm.");
       return;
     }
+    const selectedNorm = norms.find(n => n.normId === selectedNormId);
+
+    if (!selectedNorm) {
+      setMessage("Invalid norm selected.");
+      return;
+    }
+
+    if (
+      (corporate && !selectedNorm.corporate) ||
+      (!corporate && selectedNorm.corporate)
+    ) {
+      setMessage("Selected norm does not match course type.");
+      return;
+    }
+
     if (!token) {
       setMessage("You must be logged in.");
       return;
@@ -198,7 +225,16 @@ const AddChapterForm = ({
                   setShowNormDropdown(false);
                 }}
               >
-                {norm.scale_name} ({norm.gender})
+                <div className="flex justify-between items-center">
+                  <span>
+                    {norm.scale_name}
+                    {norm.gender && <span className="ml-1">({norm.gender})</span>}
+                  </span>
+
+                  <span className="text-xs text-gray-500">
+                    [{norm.corporate ? "Corporate" : "Student"}]
+                  </span>
+                </div>
               </div>
             ))}
           </div>

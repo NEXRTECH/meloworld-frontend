@@ -20,6 +20,7 @@ export type Norm = {
   age_min: number;
   age_max: number;
   description: string;
+  corporate?: boolean;
   norm_thresholds: NormThresholds;
   interpretations: Interpretations;
   recommendations: Recommendations;
@@ -30,6 +31,7 @@ export type Course = {
   title: string;
   description: string;
   image: string;
+  corporate: boolean;
   created_at: string;
   updated_at: string;
 }
