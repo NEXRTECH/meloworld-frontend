@@ -69,3 +69,26 @@ export const createChapter = async (token: string, { course_id, title, chapter_o
   const response = await retryFetch(url, options);
   return response;
 }
+
+export const deleteChapter = async (
+  token: string,
+  courseId: string,
+  chapterId: string
+) => {
+  const url = `https://${CHAPTERS_HOST}/default/psychometricChapter/chapter?action=deleteChapter`;
+
+  const options = {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      course_id: courseId,
+      chapter_id: chapterId,
+    }),
+  };
+
+  const response = await retryFetch(url, options);
+  return response;
+};
