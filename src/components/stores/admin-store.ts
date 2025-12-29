@@ -34,7 +34,7 @@ import {
   fetchSubmissions,
   submitSingleAnswer,
 } from "@/services/reports";
-import { getAllChapters, updateChapterOnServer, createChapter as createChapterService } from "@/services/chapters";
+import { getAllChapters, updateChapterOnServer, createChapter as createChapterService, deleteChapter as deleteChapterAPI, deleteChapter } from "@/services/chapters";
 
 export interface AdminStoreState {
   // Core data storage
@@ -112,6 +112,7 @@ export interface AdminStoreState {
 
   updateChapter: (token: string, chapterId: string, courseId: string, updatedChapter: Partial<Chapter>) => Promise<void>;
   createChapter: (token: string, chapter: { course_id: string, title: string, chapter_order: number, image: string, description: string, norm_id: number }) => Promise<void>;
+  deleteChapter: (token: string, chapterId: string, courseId: string) => Promise<void>;
   // Organization management
   fetchOrganizations: () => Promise<void>;
   updateOrganization: (
@@ -245,6 +246,11 @@ export const useAdminStore = create<AdminStoreState>()(
             console.error("Error updating quiz:", error);
             throw error;
           }
+        },
+        deleteChapter: async (token, chapterId, courseId) => {
+          await deleteChapterAPI(token, chapterId, courseId);
+
+          await get().getChaptersByCourse(token, courseId);
         },
         // Legacy setters for backward compatibility
         setAssessments: (assessments) => set({ assessments }),
@@ -568,6 +574,7 @@ export const useAdminStore = create<AdminStoreState>()(
             throw error;
           }
         },
+        
 
         // Organization management
         fetchOrganizations: async () => {

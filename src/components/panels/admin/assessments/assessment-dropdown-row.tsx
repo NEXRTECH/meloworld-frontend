@@ -41,9 +41,11 @@ const AssessmentDropdownRow: React.FC<AssessmentDropdownRowProps> = ({
   const { toast } = useToast();
   const chaptersByCourse = useAdminStore((s) => s.chaptersByCourse);
   const norms = useAdminStore((s) => s.norms);
-  const { getChaptersByCourse, deleteCourse } = useAdminStore();
+  const { getChaptersByCourse, deleteCourse, deleteChapter } = useAdminStore();
   const [open, setOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteChapterOpen, setDeleteChapterOpen] = useState(false);
+  const [selectedChapterId, setSelectedChapterId] = useState<string | null>(null);
 
   useEffect(() => {
     if (token) getChaptersByCourse(token, assessmentId);
@@ -69,6 +71,32 @@ const AssessmentDropdownRow: React.FC<AssessmentDropdownRowProps> = ({
     }
   };
 
+  const handleDeleteChapter = async () => {
+    if(!token || !selectedChapterId) return;
+
+    try {
+      await deleteChapter(token, assessmentId, selectedChapterId);
+
+      toast({
+        title: "Chapter Deleted",
+        description: "The Chapter has been deleted successfully",
+        variant: "success",
+      });
+
+      // Refresh Chapter list
+      getChaptersByCourse(token, assessmentId);
+    } catch {
+      toast({
+        title: "Error",
+        description: "Failed to delete chapter",
+        variant: "error",
+      });
+    } finally {
+      setDeleteChapterOpen(false);
+      setSelectedChapterId(null);
+    }
+  }
+
   return (
     <DropdownRow
       onToggle={(open) => {}}
@@ -79,26 +107,39 @@ const AssessmentDropdownRow: React.FC<AssessmentDropdownRowProps> = ({
             <div className="flex flex-wrap lg:flex-nowrap gap-4 w-full justify-center">
               {chaptersByCourse[assessmentId].map((c, id) => (
                 <Card
-                  key={id}
-                  className={`flex bg-white relative flex-col h-40 gap-2 shadow-md items-center rounded-xl border-gray-2 py-2 px-6 w-40 lg:w-full justify-center`}
+                  key={c._id}
+                  className="flex bg-white relative flex-col h-40 gap-2 shadow-md items-center rounded-xl border-gray-2 py-2 px-6 w-40 lg:w-full justify-center"
                 >
-                  <img
-                    src={chapterImg.src}
-                    className="absolute w-40 opacity-20"
-                  />
+                  <img src={chapterImg.src} className="absolute w-40 opacity-20" />
+
                   <h3 className="w-full text-center font-semibold">
                     {c.title}
                   </h3>
-                  <Button
-                    onClick={() =>
-                      router.push(
-                        `/admin/assessments/${assessmentId}/chapter/${c._id}`
-                      )
-                    }
-                    size="xs"
-                  >
-                    View More
-                  </Button>
+
+                  <div className="flex gap-2">
+                    <Button
+                      size="xs"
+                      onClick={() =>
+                        router.push(
+                          `/admin/assessments/${assessmentId}/chapter/${c._id}`
+                        )
+                      }
+                    >
+                      View More
+                    </Button>
+
+                    <Button
+                      size="xs"
+                      variant="outline"
+                      className="text-red-600 border-red-200 hover:bg-red-50"
+                      onClick={() => {
+                        setSelectedChapterId(c._id); 
+                        setDeleteChapterOpen(true);
+                      }}
+                    >
+                      <FaTrash />
+                    </Button>
+                  </div>
                 </Card>
               ))}
             </div>
@@ -109,6 +150,38 @@ const AssessmentDropdownRow: React.FC<AssessmentDropdownRowProps> = ({
               </div>
             </>
           )}
+          {/* ===== DELETE CHAPTER CONFIRMATION DIALOG ===== */}
+          <Dialog open={deleteChapterOpen} onOpenChange={setDeleteChapterOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Delete Chapter?</DialogTitle>
+                <DialogDescription>
+                  This action cannot be undone. This will permanently delete the chapter
+                  and all its quizzes and questions.
+                </DialogDescription>
+              </DialogHeader>
+
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setDeleteChapterOpen(false)}
+                >
+                  Cancel
+                </Button>
+
+                <Button
+                  size="sm"
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                  onClick={handleDeleteChapter}
+                >
+                  Delete
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          
           <div className="flex justify-center mt-5">
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
