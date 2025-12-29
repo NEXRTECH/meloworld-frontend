@@ -32,26 +32,18 @@ const AddChapterForm = ({
   const { token } = useAuthStore();
   const { toast } = useToast();
 
-  // const filteredNorms = norms.filter(
-  //   (norm) =>
-  //     (norm.scale_name || "")
-  //       .toLowerCase()
-  //       .includes(normSearch.toLowerCase()) ||
-  //     (norm.gender || "").toLowerCase().includes(normSearch.toLowerCase())
-  // );
-
   const search = normSearch.toLowerCase().trim();
 
   const filteredNorms = norms.filter((norm) => {
-    // 🔒 Enforce course type
+    // Enforce course type
     if (corporate && !norm.corporate) return false;
     if (!corporate && norm.corporate) return false;
 
-    // 🔍 Search helpers
+    // Search helpers
     if (search.startsWith("corp")) return norm.corporate;
     if (search.startsWith("stu")) return !norm.corporate;
 
-    // 🔍 Normal search
+    // Normal search
     return (
       (norm.scale_name || "").toLowerCase().includes(search) ||
       (norm.gender || "").toLowerCase().includes(search)

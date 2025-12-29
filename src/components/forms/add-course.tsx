@@ -27,31 +27,23 @@ const AddCourseForm = ({
 
   const { createCourse } = useAdminStore();
 
-  // const filteredNorms = norms.filter(
-  //   (norm) =>
-  //     (norm.scale_name || "")
-  //       .toLowerCase()
-  //       .includes(normSearch.toLowerCase()) ||
-  //     (norm.gender || "").toLowerCase().includes(normSearch.toLowerCase())
-  // );
-
   const search = normSearch.toLowerCase().trim();
 
   const filteredNorms = norms.filter((norm) => {
     const isCorporate = norm.corporate === true;
     const isStudent = !norm.corporate;
 
-    // 🟣 Corporate keyword (corp, corpor, corporate, etc.)
+    // Corporate keyword (corp, corpor, corporate, etc.)
     if (search.startsWith("corp")) {
       return isCorporate;
     }
 
-    // 🟢 Student keyword (stu, stud, stude, student, etc.)
+    // Student keyword (stu, stud, stude, student, etc.)
     if (search.startsWith("stu")) {
       return isStudent;
     }
 
-    // 🔍 Normal search (scale name / gender)
+    // Normal search (scale name / gender)
     return (
       (norm.scale_name || "").toLowerCase().includes(search) ||
       (norm.gender || "").toLowerCase().includes(search)
@@ -145,85 +137,6 @@ const AddCourseForm = ({
           onChange={(e) => setImage(e.target.value)}
         />
       </div>
-      {/* Searchable Norm Dropdown */}
-      {/* <div className="relative flex flex-col gap-1">
-        <label htmlFor="norm-search" className="text-sm font-semibold">
-          Search and select norm
-        </label>
-        <Input
-          id="norm-search"
-          placeholder="Search and select norm"
-          value={
-            selectedNormId
-              ? `${
-                  norms.find((n) => n.normId === selectedNormId)?.scale_name ||
-                  ""
-                } (${
-                  norms.find((n) => n.normId === selectedNormId)?.gender || ""
-                })`
-              : normSearch
-          }
-          onChange={(e) => {
-            setNormSearch(e.target.value);
-            setShowNormDropdown(true);
-            setSelectedNormId(null);
-          }}
-          onFocus={() => setShowNormDropdown(true)}
-          readOnly={!!selectedNormId}
-        />
-        {showNormDropdown && !selectedNormId && (
-          <div className="absolute z-10 w-full bg-white border rounded shadow max-h-48 overflow-y-auto mt-16">
-            {filteredNorms.length === 0 && (
-              <div className="p-2 text-gray-500">No norms found</div>
-            )}
-            {filteredNorms.map((norm) => (
-              <div
-                key={norm._id}
-                className="p-2 hover:bg-blue-100 cursor-pointer"
-                onClick={() => {
-                  setSelectedNormId(norm.normId);
-                  setNormSearch("");
-                  setShowNormDropdown(false);
-                }}
-              >
-                {filteredNorms.map((norm) => (
-                  <div
-                    key={norm._id}
-                    className="p-2 hover:bg-blue-100 cursor-pointer flex justify-between items-center"
-                    onClick={() => {
-                      setSelectedNormId(norm.normId);
-                      setNormSearch("");
-                      setShowNormDropdown(false);
-                    }}
-                  >
-                    <span>
-                      {norm.scale_name}
-                      {norm.gender && <span className="ml-1">({norm.gender})</span>}
-                    </span>
-
-                    <span className="text-xs text-gray-500 ml-2">
-                      [{norm.corporate ? "Corporate" : "Student"}]
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        )}
-        {selectedNormId && (
-          <button
-            type="button"
-            className="absolute right-2 top-2 text-gray-400 hover:text-gray-600"
-            onClick={() => {
-              setSelectedNormId(null);
-              setNormSearch("");
-              setShowNormDropdown(true);
-            }}
-          >
-            ×
-          </button>
-        )}
-      </div> */}
       {/* Searchable Norm Dropdown */}
       <div className="relative flex flex-col gap-1">
         <label htmlFor="norm-search" className="text-sm font-semibold">
