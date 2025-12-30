@@ -1,20 +1,20 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useOrgStore } from "@/components/stores/org-store";
 import { useAuthStore } from "@/components/stores/auth-store";
 import Button from "@/components/ui/button/button";
 import Card from "@/components/ui/card/card";
 import Table from "@/components/ui/table/table";
-import { FaEye, FaDownload } from "react-icons/fa6";
-import { FiUsers, FiBookOpen, FiTrendingUp } from "react-icons/fi";
+import { FaEye } from "react-icons/fa6";
+import { FiBookOpen } from "react-icons/fi";
 import { motion } from "framer-motion";
 
 interface ReportEntry {
   _id: string;
   yourScore: number;
-  chapterDetails: {
+  chapterDetails?: {
     _id: string;
     course_id: string;
     title: string;
@@ -74,17 +74,23 @@ const ReportsListingPage = () => {
     }
   }, [token, metadata?.organization_id]);
 
-  // Group reports by course
+  // Group reports by course (SAFE)
   const courseReports: CourseReport[] = React.useMemo(() => {
     if (!reports || reports.length === 0) return [];
 
     const coursesMap = new Map<string, CourseReport>();
 
     reports.forEach((report: ReportEntry) => {
+      // ✅ ONLY SAFETY CHECK (NO UI CHANGE)
+      if (!report.chapterDetails?.course_id) return;
+
       const courseId = report.chapterDetails.course_id;
       const courseMeta = assignedCourses.find(c => c._id === courseId);
-      const courseName = report.chapterDetails.courseTitle || courseMeta?.title || courseId;
-      
+      const courseName =
+        report.chapterDetails.courseTitle ||
+        courseMeta?.title ||
+        courseId;
+
       if (!coursesMap.has(courseId)) {
         coursesMap.set(courseId, {
           courseId,
@@ -93,26 +99,34 @@ const ReportsListingPage = () => {
           reportsCount: 0,
           completionRate: 0,
           lastUpdated: report.chapterDetails.updated_at,
-          reports: []
+          reports: [],
         });
       }
 
       const course = coursesMap.get(courseId)!;
-      // prevent duplicate chapter entries by chapter_id
-      if (!course.reports.some(r => r.chapterDetails._id === report.chapterDetails._id)) {
+
+      if (
+        !course.reports.some(
+          r => r.chapterDetails?._id === report.chapterDetails!._id
+        )
+      ) {
         course.reports.push(report);
         course.reportsCount++;
         course.chaptersCount = course.reports.length;
       }
-      
-      // Update last updated date if this report is newer
-      if (new Date(report.chapterDetails.updated_at) > new Date(course.lastUpdated)) {
+
+      if (
+        new Date(report.chapterDetails.updated_at) >
+        new Date(course.lastUpdated)
+      ) {
         course.lastUpdated = report.chapterDetails.updated_at;
       }
     });
 
-    return Array.from(coursesMap.values()).sort((a, b) => 
-      new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()
+    return Array.from(coursesMap.values()).sort(
+      (a, b) =>
+        new Date(b.lastUpdated).getTime() -
+        new Date(a.lastUpdated).getTime()
     );
   }, [reports, assignedCourses]);
 
@@ -120,18 +134,12 @@ const ReportsListingPage = () => {
     router.push(`/org/reports/${courseId}`);
   };
 
-  const handleExportAll = () => {
-    // Implementation for exporting all reports
-    console.log("Exporting all reports...");
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-24 lg:px-10 lg:py-24">
@@ -148,7 +156,6 @@ const ReportsListingPage = () => {
             View detailed assessment reports for each course assigned to your organization
           </p>
         </div>
-
 
         {/* Reports Table */}
         <motion.div
@@ -168,7 +175,6 @@ const ReportsListingPage = () => {
                       <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Chapters
                       </th>
-                      
                       <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Last Updated
                       </th>
@@ -202,10 +208,13 @@ const ReportsListingPage = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{course.chaptersCount}</div>
-                          <div className="text-sm text-gray-500">chapters</div>
+                          <div className="text-sm text-gray-900">
+                            {course.chaptersCount}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            chapters
+                          </div>
                         </td>
-                        
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
                             {formatDate(course.lastUpdated)}
@@ -214,11 +223,15 @@ const ReportsListingPage = () => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <Button
                             size="sm"
-                            onClick={() => handleViewReport(course.courseId)}
+                            onClick={() =>
+                              handleViewReport(course.courseId)
+                            }
                             className="flex items-center gap-2"
                           >
                             <FaEye className="text-sm" />
-                            <span className="hidden sm:inline">View Report</span>
+                            <span className="hidden sm:inline">
+                              View Report
+                            </span>
                             <span className="sm:hidden">View</span>
                           </Button>
                         </td>
