@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useOrgStore } from "@/components/stores/org-store";
 import { useAuthStore } from "@/components/stores/auth-store";
@@ -74,17 +74,22 @@ const ReportsListingPage = () => {
     }
   }, [token, metadata?.organization_id]);
 
-  // Group reports by course
   const courseReports: CourseReport[] = React.useMemo(() => {
     if (!reports || reports.length === 0) return [];
 
     const coursesMap = new Map<string, CourseReport>();
 
-    reports.forEach((report: ReportEntry) => {
+    reports.forEach((report) => {
+      if (!report.chapterDetails) return;
+
       const courseId = report.chapterDetails.course_id;
       const courseMeta = assignedCourses.find(c => c._id === courseId);
-      const courseName = report.chapterDetails.courseTitle || courseMeta?.title || courseId;
-      
+
+      const courseName =
+        report.chapterDetails.courseTitle ||
+        courseMeta?.title ||
+        `Course • ${courseId.slice(-6)}`;
+
       if (!coursesMap.has(courseId)) {
         coursesMap.set(courseId, {
           courseId,
@@ -98,44 +103,34 @@ const ReportsListingPage = () => {
       }
 
       const course = coursesMap.get(courseId)!;
-      // prevent duplicate chapter entries by chapter_id
+
       if (!course.reports.some(r => r.chapterDetails._id === report.chapterDetails._id)) {
         course.reports.push(report);
         course.reportsCount++;
         course.chaptersCount = course.reports.length;
       }
-      
-      // Update last updated date if this report is newer
+
       if (new Date(report.chapterDetails.updated_at) > new Date(course.lastUpdated)) {
         course.lastUpdated = report.chapterDetails.updated_at;
       }
     });
 
-    return Array.from(coursesMap.values()).sort((a, b) => 
-      new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()
+    return Array.from(coursesMap.values()).sort(
+      (a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()
     );
   }, [reports, assignedCourses]);
 
-  const handleViewReport = (courseId: string) => {
-    router.push(`/org/reports/${courseId}`);
-  };
-
-  const handleExportAll = () => {
-    // Implementation for exporting all reports
-    console.log("Exporting all reports...");
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
+  const formatDate = (dateString: string) =>
+    new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric"
     });
-  };
 
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-24 lg:px-10 lg:py-24">
       <main className="flex flex-col gap-6 sm:gap-8 max-w-7xl mx-auto">
+
         {/* Header */}
         <div className="text-center">
           <p className="uppercase text-sm font-semibold tracking-wider opacity-60">
@@ -148,7 +143,6 @@ const ReportsListingPage = () => {
             View detailed assessment reports for each course assigned to your organization
           </p>
         </div>
-
 
         {/* Reports Table */}
         <motion.div
@@ -168,7 +162,6 @@ const ReportsListingPage = () => {
                       <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Chapters
                       </th>
-                      
                       <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Last Updated
                       </th>
@@ -196,7 +189,7 @@ const ReportsListingPage = () => {
                                 {course.courseName}
                               </div>
                               <div className="text-sm text-gray-500">
-                                Course ID: {course.courseId.slice(-8)}
+                                {formatDate(course.lastUpdated)}
                               </div>
                             </div>
                           </div>
@@ -205,7 +198,6 @@ const ReportsListingPage = () => {
                           <div className="text-sm text-gray-900">{course.chaptersCount}</div>
                           <div className="text-sm text-gray-500">chapters</div>
                         </td>
-                        
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
                             {formatDate(course.lastUpdated)}
@@ -214,7 +206,7 @@ const ReportsListingPage = () => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <Button
                             size="sm"
-                            onClick={() => handleViewReport(course.courseId)}
+                            onClick={() => router.push(`/org/reports/${course.courseId}`)}
                             className="flex items-center gap-2"
                           >
                             <FaEye className="text-sm" />
@@ -229,19 +221,17 @@ const ReportsListingPage = () => {
               </div>
             ) : (
               <div className="text-center py-12 sm:py-20 px-4">
-                <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                  <FiBookOpen className="text-gray-400 text-2xl" />
-                </div>
                 <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
                   No Reports Available
                 </h3>
                 <p className="text-sm sm:text-base text-gray-500 max-w-md mx-auto">
-                  No assessment reports have been generated yet. Reports will appear here once employees complete their assessments.
+                  No assessment reports have been generated yet.
                 </p>
               </div>
             )}
           </Card>
         </motion.div>
+
       </main>
     </div>
   );
