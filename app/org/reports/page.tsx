@@ -7,14 +7,14 @@ import { useAuthStore } from "@/components/stores/auth-store";
 import Button from "@/components/ui/button/button";
 import Card from "@/components/ui/card/card";
 import Table from "@/components/ui/table/table";
-import { FaEye, FaDownload } from "react-icons/fa6";
-import { FiUsers, FiBookOpen, FiTrendingUp } from "react-icons/fi";
+import { FaEye } from "react-icons/fa6";
+import { FiBookOpen } from "react-icons/fi";
 import { motion } from "framer-motion";
 
 interface ReportEntry {
   _id: string;
   yourScore: number;
-  chapterDetails: {
+  chapterDetails?: {
     _id: string;
     course_id: string;
     title: string;
@@ -74,21 +74,22 @@ const ReportsListingPage = () => {
     }
   }, [token, metadata?.organization_id]);
 
+  // Group reports by course (SAFE)
   const courseReports: CourseReport[] = React.useMemo(() => {
     if (!reports || reports.length === 0) return [];
 
     const coursesMap = new Map<string, CourseReport>();
 
-    reports.forEach((report) => {
-      if (!report.chapterDetails) return;
+    reports.forEach((report: ReportEntry) => {
+      // ✅ ONLY SAFETY CHECK (NO UI CHANGE)
+      if (!report.chapterDetails?.course_id) return;
 
       const courseId = report.chapterDetails.course_id;
       const courseMeta = assignedCourses.find(c => c._id === courseId);
-
       const courseName =
         report.chapterDetails.courseTitle ||
         courseMeta?.title ||
-        `Course • ${courseId.slice(-6)}`;
+        courseId;
 
       if (!coursesMap.has(courseId)) {
         coursesMap.set(courseId, {
@@ -98,39 +99,51 @@ const ReportsListingPage = () => {
           reportsCount: 0,
           completionRate: 0,
           lastUpdated: report.chapterDetails.updated_at,
-          reports: []
+          reports: [],
         });
       }
 
       const course = coursesMap.get(courseId)!;
 
-      if (!course.reports.some(r => r.chapterDetails._id === report.chapterDetails._id)) {
+      if (
+        !course.reports.some(
+          r => r.chapterDetails?._id === report.chapterDetails!._id
+        )
+      ) {
         course.reports.push(report);
         course.reportsCount++;
         course.chaptersCount = course.reports.length;
       }
 
-      if (new Date(report.chapterDetails.updated_at) > new Date(course.lastUpdated)) {
+      if (
+        new Date(report.chapterDetails.updated_at) >
+        new Date(course.lastUpdated)
+      ) {
         course.lastUpdated = report.chapterDetails.updated_at;
       }
     });
 
     return Array.from(coursesMap.values()).sort(
-      (a, b) => new Date(b.lastUpdated).getTime() - new Date(a.lastUpdated).getTime()
+      (a, b) =>
+        new Date(b.lastUpdated).getTime() -
+        new Date(a.lastUpdated).getTime()
     );
   }, [reports, assignedCourses]);
+
+  const handleViewReport = (courseId: string) => {
+    router.push(`/org/reports/${courseId}`);
+  };
 
   const formatDate = (dateString: string) =>
     new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
-      day: "numeric"
+      day: "numeric",
     });
 
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-24 lg:px-10 lg:py-24">
       <main className="flex flex-col gap-6 sm:gap-8 max-w-7xl mx-auto">
-
         {/* Header */}
         <div className="text-center">
           <p className="uppercase text-sm font-semibold tracking-wider opacity-60">
@@ -189,14 +202,18 @@ const ReportsListingPage = () => {
                                 {course.courseName}
                               </div>
                               <div className="text-sm text-gray-500">
-                                {formatDate(course.lastUpdated)}
+                                Course ID: {course.courseId.slice(-8)}
                               </div>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{course.chaptersCount}</div>
-                          <div className="text-sm text-gray-500">chapters</div>
+                          <div className="text-sm text-gray-900">
+                            {course.chaptersCount}
+                          </div>
+                          <div className="text-sm text-gray-500">
+                            chapters
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
@@ -206,11 +223,15 @@ const ReportsListingPage = () => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <Button
                             size="sm"
-                            onClick={() => router.push(`/org/reports/${course.courseId}`)}
+                            onClick={() =>
+                              handleViewReport(course.courseId)
+                            }
                             className="flex items-center gap-2"
                           >
                             <FaEye className="text-sm" />
-                            <span className="hidden sm:inline">View Report</span>
+                            <span className="hidden sm:inline">
+                              View Report
+                            </span>
                             <span className="sm:hidden">View</span>
                           </Button>
                         </td>
@@ -221,17 +242,19 @@ const ReportsListingPage = () => {
               </div>
             ) : (
               <div className="text-center py-12 sm:py-20 px-4">
+                <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                  <FiBookOpen className="text-gray-400 text-2xl" />
+                </div>
                 <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">
                   No Reports Available
                 </h3>
                 <p className="text-sm sm:text-base text-gray-500 max-w-md mx-auto">
-                  No assessment reports have been generated yet.
+                  No assessment reports have been generated yet. Reports will appear here once employees complete their assessments.
                 </p>
               </div>
             )}
           </Card>
         </motion.div>
-
       </main>
     </div>
   );
